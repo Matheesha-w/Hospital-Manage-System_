@@ -1,5 +1,6 @@
 package com.hms.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hms.server.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -35,7 +36,8 @@ public class SignUpRequest {
     
     private String phoneNumber;
     private String address;
-    private LocalDateTime dateOfBirth;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateOfBirth;
     
     // Role selection
     private User.Role role;

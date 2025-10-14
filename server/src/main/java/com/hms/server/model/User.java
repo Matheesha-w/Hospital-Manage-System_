@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class User {
     
     private String address;
     
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
     
     private Set<Role> roles;
     
