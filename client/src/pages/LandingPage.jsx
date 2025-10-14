@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
-import { User, LogIn, UserPlus } from 'lucide-react';
+import { Activity, Stethoscope, ShieldCheck, Users } from 'lucide-react';
 
 const LandingPage = () => {
   const { user } = useAuth();
@@ -11,167 +10,145 @@ const LandingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <User className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">Hospital Management System</h1>
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50 to-white">
+      {/* Navbar */}
+      <nav className="sticky top-0 bg-white/80 backdrop-blur border-b z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center">
+            <Activity className="h-6 w-6 text-blue-600 mr-2" />
+            <span className="text-lg font-semibold text-gray-900">HMS</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link to="/login" className="text-gray-700 hover:text-gray-900 text-sm px-3 py-2 rounded-md">
+              Sign in
+            </Link>
+            <Link to="/register" className="bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700">
+              Create account
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <header className="relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
+              Manage your hospital, effortlessly
+            </h1>
+            <p className="mt-4 text-lg text-gray-600 max-w-xl">
+              Streamlined workflows for appointments, staff, labs, and patients — secured by role-based access.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/register" className="bg-blue-600 text-white px-5 py-3 rounded-md font-medium hover:bg-blue-700">
+                Get started
+              </Link>
+              <Link to="/login" className="px-5 py-3 rounded-md font-medium text-blue-700 bg-blue-100 hover:bg-blue-200">
+                I already have an account
+              </Link>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/login"
-                className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                <LogIn className="h-4 w-4" />
-                <span>Sign In</span>
-              </Link>
-              <Link
-                to="/register"
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span>Sign Up</span>
-              </Link>
+            <div className="mt-8 grid grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg border p-4 text-center">
+                <p className="text-2xl font-bold text-gray-900">99.9%</p>
+                <p className="text-xs text-gray-500">Uptime</p>
+              </div>
+              <div className="bg-white rounded-lg border p-4 text-center">
+                <p className="text-2xl font-bold text-gray-900">Role</p>
+                <p className="text-xs text-gray-500">based access</p>
+              </div>
+              <div className="bg-white rounded-lg border p-4 text-center">
+                <p className="text-2xl font-bold text-gray-900">HIPAA</p>
+                <p className="text-xs text-gray-500">minded design</p>
+              </div>
+            </div>
+          </div>
+          <div className="relative hidden lg:block">
+            <div className="absolute -inset-6 bg-blue-200/40 blur-3xl rounded-full"></div>
+            <div className="relative bg-white border rounded-xl shadow-sm p-6">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-blue-50 p-2">
+                  <Stethoscope className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Today</p>
+                  <p className="text-base font-semibold text-gray-900">14 appointments scheduled</p>
+                </div>
+              </div>
+              <div className="mt-6 grid grid-cols-3 gap-4">
+                <div className="bg-gray-50 rounded-md p-4">
+                  <p className="text-2xl font-bold text-gray-900">8</p>
+                  <p className="text-xs text-gray-500">Doctors</p>
+                </div>
+                <div className="bg-gray-50 rounded-md p-4">
+                  <p className="text-2xl font-bold text-gray-900">24</p>
+                  <p className="text-xs text-gray-500">Nurses</p>
+                </div>
+                <div className="bg-gray-50 rounded-md p-4">
+                  <p className="text-2xl font-bold text-gray-900">6</p>
+                  <p className="text-xs text-gray-500">Lab techs</p>
+                </div>
+              </div>
+              <div className="mt-6 flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-green-600" />
+                <p className="text-sm text-gray-700">JWT secured API with granular permissions</p>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-            Welcome to HMS
-          </h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            A comprehensive Hospital Management System designed to streamline healthcare operations
-            and improve patient care.
-          </p>
-        </div>
-
-        {/* User Types */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-            <img
-              src="/src/assets/authassets/patient-groups.jpg"
-              alt="Patients"
-              className="w-24 h-24 mx-auto mb-4 rounded-full object-cover"
-            />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Patients</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Book appointments, view medical history, and manage your healthcare journey.
-            </p>
-              <Link
-                to="/register?role=PATIENT"
-                className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
-              >
-                Register as Patient
-              </Link>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-            <img
-              src="/src/assets/authassets/doctors2.png"
-              alt="Doctors"
-              className="w-24 h-24 mx-auto mb-4 rounded-full object-cover"
-            />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Doctors</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Manage patients, appointments, and provide comprehensive medical care.
-            </p>
-              <Link
-                to="/register?role=DOCTOR"
-                className="inline-block bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700"
-              >
-                Apply as Doctor
-              </Link>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-            <img
-              src="/src/assets/authassets/nurse.jpg"
-              alt="Nurses"
-              className="w-24 h-24 mx-auto mb-4 rounded-full object-cover"
-            />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Nurses</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Provide patient care, record vitals, and assist in medical procedures.
-            </p>
-              <Link
-                to="/register?role=NURSE"
-                className="inline-block bg-pink-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-pink-700"
-              >
-                Apply as Nurse
-              </Link>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-            <img
-              src="/src/assets/authassets/laboratorians.jpg"
-              alt="Lab Technicians"
-              className="w-24 h-24 mx-auto mb-4 rounded-full object-cover"
-            />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Lab Technicians</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              Conduct laboratory tests, analyze samples, and provide accurate results.
-            </p>
-              <Link
-                to="/register?role=LAB_TECHNICIAN"
-                className="inline-block bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700"
-              >
-                Apply as Lab Tech
-              </Link>
+      {/* Features */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 text-center">Everything you need to run smoothly</h2>
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <FeatureCard icon={<Users className="h-6 w-6 text-blue-600" />} title="Role oriented" desc="Separate portals for admins, doctors, nurses, lab." />
+            <FeatureCard icon={<Stethoscope className="h-6 w-6 text-blue-600" />} title="Appointments" desc="Fast scheduling and queue management." />
+            <FeatureCard icon={<ShieldCheck className="h-6 w-6 text-blue-600" />} title="Secure by default" desc="JWT auth and route protection built-in." />
+            <FeatureCard icon={<Activity className="h-6 w-6 text-blue-600" />} title="Analytics" desc="Operational insights at a glance." />
           </div>
         </div>
+      </section>
 
-        {/* Features */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            System Features
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🔐</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure Authentication</h3>
-              <p className="text-gray-600">
-                Role-based access control with JWT authentication for secure access.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">👥</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">User Management</h3>
-              <p className="text-gray-600">
-                Comprehensive user management with approval workflows for staff.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📊</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Dashboard Analytics</h3>
-              <p className="text-gray-600">
-                Real-time dashboard with role-specific information and analytics.
-              </p>
-            </div>
+      {/* CTA */}
+      <section className="py-12">
+        <div className="max-w-3xl mx-auto text-center px-4">
+          <h3 className="text-xl font-semibold text-gray-900">Ready to modernize your hospital operations?</h3>
+          <p className="mt-2 text-gray-600">Start with a free account and invite your staff in minutes.</p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Link to="/register" className="bg-blue-600 text-white px-5 py-3 rounded-md font-medium hover:bg-blue-700">
+              Create your HMS account
+            </Link>
+            <Link to="/login" className="px-5 py-3 rounded-md font-medium text-blue-700 bg-blue-100 hover:bg-blue-200">
+              Sign in
+            </Link>
           </div>
         </div>
-      </main>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600">
-            <p>&copy; 2024 Hospital Management System. All rights reserved.</p>
+      <footer className="border-t py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} HMS. All rights reserved.</p>
+          <div className="flex gap-4 text-sm text-gray-600">
+            <span>Security</span>
+            <span>Status</span>
+            <span>Contact</span>
           </div>
         </div>
       </footer>
+    </div>
+  );
+};
+
+const FeatureCard = ({ icon, title, desc }) => {
+  return (
+    <div className="rounded-xl border p-5 bg-gray-50">
+      <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mb-3">
+        {icon}
+      </div>
+      <h4 className="font-semibold text-gray-900">{title}</h4>
+      <p className="mt-1 text-sm text-gray-600">{desc}</p>
     </div>
   );
 };
