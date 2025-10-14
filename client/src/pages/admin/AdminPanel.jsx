@@ -134,6 +134,11 @@ const AdminPanel = () => {
                           </div>
                           <div className="text-sm text-gray-500">{request.email}</div>
                           <div className="text-sm text-gray-500">{request.phoneNumber}</div>
+                          {request.linkedIn && (
+                            <div className="text-sm text-blue-600 mt-1">
+                              <a href={request.linkedIn} target="_blank" rel="noopener noreferrer" className="underline">LinkedIn</a>
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -221,6 +226,14 @@ const AdminPanel = () => {
                     <label className="text-sm font-medium text-gray-500">Address</label>
                     <p className="text-sm text-gray-900">{selectedRequest.address}</p>
                   </div>
+                  {selectedRequest.linkedIn && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">LinkedIn</label>
+                      <a href={selectedRequest.linkedIn} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-sm">
+                        {selectedRequest.linkedIn}
+                      </a>
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm font-medium text-gray-500">Requested Role</label>
                     <p className="text-sm text-gray-900">
