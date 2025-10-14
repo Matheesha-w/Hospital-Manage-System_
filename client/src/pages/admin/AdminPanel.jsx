@@ -21,7 +21,8 @@ const AdminPanel = () => {
     try {
       const response = await axios.get('/admin/registration-requests');
       setRequests(response.data.data);
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to fetch registration requests');
     } finally {
       setLoading(false);
@@ -33,7 +34,8 @@ const AdminPanel = () => {
       await axios.post(`/admin/registration-requests/${requestId}/approve`);
       toast.success('Registration approved successfully');
       fetchRegistrationRequests();
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to approve registration');
     }
   };
@@ -43,7 +45,8 @@ const AdminPanel = () => {
       await axios.post(`/admin/registration-requests/${requestId}/reject`);
       toast.success('Registration rejected');
       fetchRegistrationRequests();
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to reject registration');
     }
   };
