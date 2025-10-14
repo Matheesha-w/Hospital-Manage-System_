@@ -1,0 +1,168 @@
+package com.hms.server.controllers.adminControllers;
+
+import com.hms.server.dto.ApiResponse;
+import com.hms.server.model.RegistrationRequest;
+import com.hms.server.model.User;
+import com.hms.server.repository.RegistrationRequestRepository;
+import com.hms.server.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/admin")
+@RequiredArgsConstructor
+@Slf4j
+public class AdminController {
+
+    private final RegistrationRequestRepository registrationRequestRepository;
+    private final UserRepository userRepository;
+
+    @GetMapping("/registration-requests")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getAllRegistrationRequests() {
+        List<RegistrationRequest> requests = registrationRequestRepository.findByStatus(RegistrationRequest.RequestStatus.PENDING);
+        return ResponseEntity.ok(new ApiResponse(true, "Registration requests retrieved successfully", requests));
+    }
+
+    @GetMapping("/registration-requests/{requestId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getRegistrationRequest(@PathVariable String requestId) {
+        Optional<RegistrationRequest> request = registrationRequestRepository.findById(requestId);
+        if (request.isPresent()) {
+            return ResponseEntity.ok(new ApiResponse(true, "Registration request retrieved successfully", request.get()));
+        } else {
+            return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+        }
+    }
+
+    @PostMapping("/registration-requests/{requestId}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> approveRegistrationRequest(
+            @PathVariable String requestId,
+            @RequestParam(required = false) String adminNotes) {
+        
+        Optional<RegistrationRequest> requestOpt = registrationRequestRepository.findById(requestId);
+        if (requestOpt.isEmpty()) {
+            return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+        }
+
+        RegistrationRequest request = requestOpt.get();
+        if (request.getStatus() != RegistrationRequest.RequestStatus.PENDING) {
+            return ResponseEntity.ok(new ApiResponse(false, "Registration request is not pending"));
+        }
+
+        // Update user approval status
+        Optional<User> userOpt = userRepository.findById(request.getUserId());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+        }
+
+        User user = userOpt.get();
+        user.setApproved(true);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        // Update registration request
+        request.setStatus(RegistrationRequest.RequestStatus.APPROVED);
+        request.setReviewedAt(LocalDateTime.now());
+        request.setAdminNotes(adminNotes);
+        registrationRequestRepository.save(request);
+
+        log.info("Registration request approved for user: {}", user.getUsername());
+
+        return ResponseEntity.ok(new ApiResponse(true, "Registration request approved successfully"));
+    }
+
+    @PostMapping("/registration-requests/{requestId}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> rejectRegistrationRequest(
+            @PathVariable String requestId,
+            @RequestParam(required = false) String adminNotes) {
+        
+        Optional<RegistrationRequest> requestOpt = registrationRequestRepository.findById(requestId);
+        if (requestOpt.isEmpty()) {
+            return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+        }
+
+        RegistrationRequest request = requestOpt.get();
+        if (request.getStatus() != RegistrationRequest.RequestStatus.PENDING) {
+            return ResponseEntity.ok(new ApiResponse(false, "Registration request is not pending"));
+        }
+
+        // Update registration request
+        request.setStatus(RegistrationRequest.RequestStatus.REJECTED);
+        request.setReviewedAt(LocalDateTime.now());
+        request.setAdminNotes(adminNotes);
+        registrationRequestRepository.save(request);
+
+        // Optionally deactivate the user
+        Optional<User> userOpt = userRepository.findById(request.getUserId());
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setActive(false);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+        }
+
+        log.info("Registration request rejected for user: {}", request.getUsername());
+
+        return ResponseEntity.ok(new ApiResponse(true, "Registration request rejected successfully"));
+    }
+
+    @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(new ApiResponse(true, "Users retrieved successfully", users));
+    }
+
+    @GetMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getUser(@PathVariable String userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(new ApiResponse(true, "User retrieved successfully", user.get()));
+        } else {
+            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+        }
+    }
+
+    @PostMapping("/users/{userId}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> activateUser(@PathVariable String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+        }
+
+        User user = userOpt.get();
+        user.setActive(true);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new ApiResponse(true, "User activated successfully"));
+    }
+
+    @PostMapping("/users/{userId}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> deactivateUser(@PathVariable String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+        }
+
+        User user = userOpt.get();
+        user.setActive(false);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new ApiResponse(true, "User deactivated successfully"));
+    }
+}
