@@ -2,11 +2,18 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Header from './components/Header';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/AdminPanel';
 import AdminUsers from './pages/AdminUsers';
+import AdminContacts from './pages/AdminContacts';
+import AdminLayout from './pages/AdminLayout';
+import Profile from './pages/Profile';
+import Contact from './pages/Contact';
+import About from './pages/About';
+import News from './pages/News';
 import LandingPage from './pages/LandingPage';
 
 function AppContent() {
@@ -24,8 +31,12 @@ function AppContent() {
     <Router>
       <div className="App">
         <Toaster position="top-right" />
+        <Header />
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/contact" element={<Contact />} />
           <Route 
             path="/login" 
             element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
@@ -34,6 +45,11 @@ function AppContent() {
             path="/register" 
             element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />} 
           />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
           <Route 
             path="/dashboard" 
             element={
@@ -42,22 +58,15 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requiredRoles={['ADMIN']}>
-                <AdminPanel />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/users" 
-            element={
-              <ProtectedRoute requiredRoles={['ADMIN']}>
-                <AdminUsers />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/admin" element={
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminPanel />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="contacts" element={<AdminContacts />} />
+          </Route>
         </Routes>
       </div>
     </Router>
