@@ -24,7 +24,6 @@ const RegisterPage = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
   } = useForm();
 
   const onSubmit = async (data) => {
