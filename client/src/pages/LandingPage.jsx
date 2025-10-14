@@ -11,23 +11,6 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-50 to-white">
-      {/* Navbar */}
-      <nav className="sticky top-0 bg-white/80 backdrop-blur border-b z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center">
-            <Activity className="h-6 w-6 text-blue-600 mr-2" />
-            <span className="text-lg font-semibold text-gray-900">HMS</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="text-gray-700 hover:text-gray-900 text-sm px-3 py-2 rounded-md">
-              Sign in
-            </Link>
-            <Link to="/register" className="bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700">
-              Create account
-            </Link>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero */}
       <header className="relative overflow-hidden">
