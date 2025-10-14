@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/AdminPanel';
+import AdminUsers from './pages/AdminUsers';
 import LandingPage from './pages/LandingPage';
 
 function AppContent() {
@@ -46,6 +47,14 @@ function AppContent() {
             element={
               <ProtectedRoute requiredRoles={['ADMIN']}>
                 <AdminPanel />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN']}>
+                <AdminUsers />
               </ProtectedRoute>
             } 
           />

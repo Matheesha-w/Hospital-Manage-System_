@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { CheckCircle, XCircle, Eye, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, FileText, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -72,6 +73,21 @@ const AdminPanel = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
           <p className="mt-2 text-gray-600">Manage user registrations and system settings</p>
+        </div>
+
+        {/* Quick actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Link to="/admin/users" className="bg-white border rounded-lg p-6 hover:shadow">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">Manage Users</h2>
+                <p className="text-sm text-gray-600">Add, remove, and update users by category</p>
+              </div>
+            </div>
+          </Link>
         </div>
 
         <div className="bg-white shadow-sm rounded-lg">
