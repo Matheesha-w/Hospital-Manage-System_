@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -24,33 +25,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await axios.get('/auth/me');
+      // Debug: log response briefly to help trace 401/200
+      console.debug('[AuthContext] /auth/me response status:', response.status, 'data keys:', Object.keys(response.data || {}));
+      setUser(response.data.data);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      // clear local auth state without calling logout() to keep this callback stable
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // Debug: log token presence in dev
+      console.debug('[AuthContext] token present (length):', token?.length);
       fetchUser();
     } else {
       setLoading(false);
     }
-  }, [token]);
-
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get('/auth/me');
-      setUser(response.data.data);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [token, fetchUser]);
 
   const login = async (credentials) => {
     try {
       const response = await axios.post('/auth/signin', credentials);
       const { accessToken, ...userData } = response.data;
       
-      setToken(accessToken);
+  setToken(accessToken);
+  console.debug('[AuthContext] login received token length:', accessToken?.length);
       setUser(userData);
       localStorage.setItem('token', accessToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
@@ -64,7 +74,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const registerUser = async (userData, cvFile) => {
+  const registerUser = async (userData) => {
     try {
       if (userData.role === 'PATIENT') {
         const response = await apiNoAuth.post('/auth/signup/patient', userData, { withCredentials: false });
