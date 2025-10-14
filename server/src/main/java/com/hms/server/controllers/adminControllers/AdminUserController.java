@@ -1,6 +1,9 @@
 package com.hms.server.controllers.adminControllers;
 
-import com.hms.server.dto.*;
+import com.hms.server.dto.ApiResponse;
+import com.hms.server.dto.admin.AdminUserCreateRequest;
+import com.hms.server.dto.admin.AdminUserResponse;
+import com.hms.server.dto.admin.AdminUserUpdateRequest;
 import com.hms.server.model.User;
 import com.hms.server.service.AdminUserService;
 import lombok.RequiredArgsConstructor;

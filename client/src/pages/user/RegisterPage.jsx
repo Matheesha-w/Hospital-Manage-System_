@@ -28,11 +28,6 @@ const RegisterPage = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    if (selectedRole !== 'PATIENT' && !cvFile) {
-      toast.error('CV file is required for staff registration');
-      return;
-    }
-
     const userData = {
       ...data,
       role: selectedRole
@@ -50,15 +45,7 @@ const RegisterPage = () => {
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      setCvFile(file);
-    } else {
-      toast.error('Please upload a PDF file');
-      setCvFile(null);
-    }
-  };
+  const handleFileChange = () => {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -342,23 +329,7 @@ const RegisterPage = () => {
                   </div>
                 )}
 
-                <div>
-                  <label htmlFor="cvFile" className="block text-sm font-medium text-gray-700">
-                    CV/Resume (PDF only) *
-                  </label>
-                  <div className="mt-1 relative">
-                    <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileChange}
-                      className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline.none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  {cvFile && (
-                    <p className="mt-1 text-sm text-green-600">File selected: {cvFile.name}</p>
-                  )}
-                </div>
+                {/* CV upload removed */}
               </>
             )}
 
