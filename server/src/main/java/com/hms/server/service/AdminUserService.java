@@ -1,8 +1,8 @@
 package com.hms.server.service;
 
-import com.hms.server.dto.AdminUserCreateRequest;
-import com.hms.server.dto.AdminUserResponse;
-import com.hms.server.dto.AdminUserUpdateRequest;
+import com.hms.server.dto.admin.AdminUserCreateRequest;
+import com.hms.server.dto.admin.AdminUserResponse;
+import com.hms.server.dto.admin.AdminUserUpdateRequest;
 import com.hms.server.model.User;
 import com.hms.server.repository.UserRepository;
 import jakarta.validation.Valid;
