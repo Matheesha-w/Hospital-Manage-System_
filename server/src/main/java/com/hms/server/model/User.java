@@ -65,6 +65,8 @@ public class User {
     private String specialization; // For doctors
     private String department; // For nurses and lab technicians
     private String licenseNumber; // For doctors
+    private String linkedinUrl;
+    private String cvLocalPath;
     private LocalDateTime cvUploadedAt;
     
     public enum Role {
