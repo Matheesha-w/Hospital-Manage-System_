@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
+import com.hms.server.model.User;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,6 +30,14 @@ public class AuthController {
             @Valid @RequestPart("userData") SignUpRequest signUpRequest,
             @RequestPart(value = "cvFile", required = false) MultipartFile cvFile) {
         ApiResponse response = authService.registerUser(signUpRequest, cvFile);
+        return ResponseEntity.ok(response);
+    }
+
+    // Convenience endpoint for patients: simple JSON body, no multipart
+    @PostMapping("/signup/patient")
+    public ResponseEntity<ApiResponse> registerPatient(@Valid @RequestBody SignUpRequest signUpRequest) {
+        signUpRequest.setRole(User.Role.PATIENT);
+        ApiResponse response = authService.registerUser(signUpRequest, null);
         return ResponseEntity.ok(response);
     }
 

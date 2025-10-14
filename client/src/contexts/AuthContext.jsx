@@ -63,17 +63,19 @@ export const AuthProvider = ({ children }) => {
 
   const registerUser = async (userData, cvFile) => {
     try {
+      if (userData.role === 'PATIENT') {
+        const response = await axios.post('/auth/signup/patient', userData);
+        return { success: true, data: response.data };
+      }
+
       const formData = new FormData();
       formData.append('userData', JSON.stringify(userData));
       if (cvFile) {
         formData.append('cvFile', cvFile);
       }
-      
-      const response = await axios.post('/auth/signup', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+
+      // Let axios set the correct multipart boundary header automatically
+      const response = await axios.post('/auth/signup', formData);
       return { success: true, data: response.data };
     } catch (error) {
       return { 
