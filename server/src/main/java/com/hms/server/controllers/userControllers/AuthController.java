@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+// no-op
 
 import jakarta.validation.Valid;
 import com.hms.server.model.User;
@@ -26,10 +26,8 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse> registerUser(
-            @Valid @RequestPart("userData") SignUpRequest signUpRequest,
-            @RequestPart(value = "cvFile", required = false) MultipartFile cvFile) {
-        ApiResponse response = authService.registerUser(signUpRequest, cvFile);
+    public ResponseEntity<ApiResponse> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+        ApiResponse response = authService.registerUser(signUpRequest, null);
         return ResponseEntity.ok(response);
     }
 
