@@ -46,4 +46,6 @@ public class SignUpRequest {
     private String specialization;
     private String department;
     private String licenseNumber;
+    private String linkedinUrl;
+    private String cvLocalPath;
 }
