@@ -15,6 +15,9 @@ const API_BASE_URL = 'http://localhost:8080/api';
 
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
+const apiNoAuth = axios.create({ baseURL: API_BASE_URL, withCredentials: false });
+// Ensure no Authorization header is carried over
+delete apiNoAuth.defaults.headers.common['Authorization'];
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -64,18 +67,12 @@ export const AuthProvider = ({ children }) => {
   const registerUser = async (userData, cvFile) => {
     try {
       if (userData.role === 'PATIENT') {
-        const response = await axios.post('/auth/signup/patient', userData);
+        const response = await apiNoAuth.post('/auth/signup/patient', userData, { withCredentials: false });
         return { success: true, data: response.data };
       }
 
-      const formData = new FormData();
-      formData.append('userData', JSON.stringify(userData));
-      if (cvFile) {
-        formData.append('cvFile', cvFile);
-      }
-
-      // Let axios set the correct multipart boundary header automatically
-      const response = await axios.post('/auth/signup', formData);
+      // Staff signup now JSON-only (no CV)
+      const response = await apiNoAuth.post('/public/signup/staff', userData, { withCredentials: false });
       return { success: true, data: response.data };
     } catch (error) {
       return { 

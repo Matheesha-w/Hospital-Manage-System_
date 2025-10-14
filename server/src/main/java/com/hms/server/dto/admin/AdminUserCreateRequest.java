@@ -1,4 +1,4 @@
-package com.hms.server.dto;
+package com.hms.server.dto.admin;
 
 import com.hms.server.model.User;
 import jakarta.validation.constraints.Email;
@@ -33,10 +33,8 @@ public class AdminUserCreateRequest {
     private String address;
     private LocalDate dateOfBirth;
 
-    // Single primary role for creation
     private User.Role role;
 
-    // Staff fields
     private String specialization;
     private String department;
     private String licenseNumber;

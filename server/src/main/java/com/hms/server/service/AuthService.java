@@ -17,14 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
+// no-op
 import java.util.Set;
-import java.util.UUID;
+// no-op
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +31,7 @@ public class AuthService {
     private final RegistrationRequestRepository registrationRequestRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
-    private final String uploadDir = "uploads/cv";
+    // CV upload removed
 
     public JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -77,10 +72,7 @@ public class AuthService {
             return new ApiResponse(false, "Role is required!");
         }
 
-        // Check if CV is required for staff roles
-        if (signUpRequest.getRole() != User.Role.PATIENT && (cvFile == null || cvFile.isEmpty())) {
-            return new ApiResponse(false, "CV file is required for staff registration!");
-        }
+        // CV no longer required for staff roles
 
         try {
             User user = new User();
@@ -97,14 +89,7 @@ public class AuthService {
             user.setLicenseNumber(signUpRequest.getLicenseNumber());
             user.setRoles(Set.of(signUpRequest.getRole()));
 
-            // Handle CV upload for staff
-            if (signUpRequest.getRole() != User.Role.PATIENT && cvFile != null) {
-                String cvFileName = saveCvFile(cvFile);
-                String cvFilePath = uploadDir + "/" + cvFileName;
-                user.setCvFileName(cvFileName);
-                user.setCvFilePath(cvFilePath);
-                user.setCvUploadedAt(LocalDateTime.now());
-            }
+            // CV upload removed
 
             // Set approval status based on role
             if (signUpRequest.getRole() == User.Role.PATIENT) {
@@ -128,8 +113,7 @@ public class AuthService {
                 request.setSpecialization(savedUser.getSpecialization());
                 request.setDepartment(savedUser.getDepartment());
                 request.setLicenseNumber(savedUser.getLicenseNumber());
-                request.setCvFileName(savedUser.getCvFileName());
-                request.setCvFilePath(savedUser.getCvFilePath());
+                // CV fields removed
                 request.setRequestedRole(signUpRequest.getRole());
 
                 registrationRequestRepository.save(request);
@@ -144,34 +128,14 @@ public class AuthService {
 
             return new ApiResponse(true, message, savedUser);
 
-        } catch (IOException e) {
-            log.error("Error saving CV file", e);
-            return new ApiResponse(false, "Error saving CV file: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error during registration", e);
+            return new ApiResponse(false, "Registration failed: " + e.getMessage());
         }
     }
 
 
-    private String saveCvFile(MultipartFile file) throws IOException {
-        // Create upload directory if it doesn't exist
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        // Generate unique filename
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null) {
-            throw new IOException("Original filename is null");
-        }
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String fileName = UUID.randomUUID().toString() + fileExtension;
-
-        // Save file
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        return fileName;
-    }
+    // CV handling removed
 
 
     public ApiResponse getCurrentUser() {
@@ -187,3 +151,4 @@ public class AuthService {
         return new ApiResponse(true, "User details retrieved successfully", user);
     }
 }
+

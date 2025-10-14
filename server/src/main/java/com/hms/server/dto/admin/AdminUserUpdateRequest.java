@@ -1,4 +1,4 @@
-package com.hms.server.dto;
+package com.hms.server.dto.admin;
 
 import com.hms.server.model.User;
 import jakarta.validation.constraints.Email;
