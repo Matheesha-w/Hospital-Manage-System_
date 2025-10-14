@@ -24,7 +24,9 @@ const LoginPage = () => {
     
     if (result.success) {
       toast.success('Login successful!');
-      navigate(from, { replace: true });
+      const roles = result.data?.roles || [];
+      const target = roles.includes('ADMIN') ? '/admin' : from;
+      navigate(target, { replace: true });
     } else {
       toast.error(result.error);
     }
