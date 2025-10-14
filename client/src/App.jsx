@@ -8,6 +8,11 @@ import RegisterPage from './pages/user/RegisterPage';
 import Dashboard from './pages/user/Dashboard';
 import AdminPanel from './pages/admin/AdminPanel';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminDoctorsTable from './pages/admin/userCategoryTables/AdminDoctorsTable';
+import AdminNursesTable from './pages/admin/userCategoryTables/AdminNursesTable';
+import AdminPatientsTable from './pages/admin/userCategoryTables/AdminPatientsTable';
+import AdminLabStaffTable from './pages/admin/userCategoryTables/AdminLabStaffTable';
+import AdminAdminsTable from './pages/admin/userCategoryTables/AdminAdminsTable';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminLayout from './pages/admin/AdminLayout';
 import Profile from './pages/user/Profile';
@@ -65,6 +70,11 @@ function AppContent() {
           }>
             <Route index element={<AdminPanel />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="users/patient" element={<AdminPatientsTable />} />
+            <Route path="users/doctor" element={<AdminDoctorsTable />} />
+            <Route path="users/nurse" element={<AdminNursesTable />} />
+            <Route path="users/lab_technician" element={<AdminLabStaffTable />} />
+            <Route path="users/admin" element={<AdminAdminsTable />} />
             <Route path="contacts" element={<AdminContacts />} />
           </Route>
         </Routes>
