@@ -38,8 +38,8 @@ public class RegistrationRequest {
     private String specialization;
     private String department;
     private String licenseNumber;
-    private String cvFileName;
-    private String cvFilePath;
+    private String linkedinUrl;
+    private String cvLocalPath;
     
     private User.Role requestedRole;
     

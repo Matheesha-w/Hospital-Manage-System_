@@ -87,6 +87,8 @@ public class AuthService {
             user.setSpecialization(signUpRequest.getSpecialization());
             user.setDepartment(signUpRequest.getDepartment());
             user.setLicenseNumber(signUpRequest.getLicenseNumber());
+            user.setLinkedinUrl(signUpRequest.getLinkedinUrl());
+            user.setCvLocalPath(signUpRequest.getCvLocalPath());
             user.setRoles(Set.of(signUpRequest.getRole()));
 
             // CV upload removed
@@ -113,7 +115,8 @@ public class AuthService {
                 request.setSpecialization(savedUser.getSpecialization());
                 request.setDepartment(savedUser.getDepartment());
                 request.setLicenseNumber(savedUser.getLicenseNumber());
-                // CV fields removed
+                request.setLinkedinUrl(savedUser.getLinkedinUrl());
+                request.setCvLocalPath(savedUser.getCvLocalPath());
                 request.setRequestedRole(signUpRequest.getRole());
 
                 registrationRequestRepository.save(request);
