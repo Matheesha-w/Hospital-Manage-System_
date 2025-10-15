@@ -1,18 +1,22 @@
+
 import React, { useEffect, useState } from "react";
 import { FaCheckCircle, FaRegCommentDots } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import { useAuth } from "../../contexts/AuthContext";
 
 const AdminFeedback = () => {
   const [pending, setPending] = useState([]);
   const [approved, setApproved] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
 
   const fetchFeedbacks = async () => {
     setLoading(true);
     try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const [pendingRes, approvedRes] = await Promise.all([
-        fetch("/api/admin/feedback/pending").then((r) => r.json()),
-        fetch("/api/admin/feedback/approved").then((r) => r.json()),
+        fetch("/api/admin/feedback/pending", { headers }).then((r) => r.json()),
+        fetch("/api/admin/feedback/approved", { headers }).then((r) => r.json()),
       ]);
       setPending(pendingRes);
       setApproved(approvedRes);
@@ -25,11 +29,13 @@ const AdminFeedback = () => {
 
   useEffect(() => {
     fetchFeedbacks();
-  }, []);
+    // eslint-disable-next-line
+  }, [token]);
 
   const approveFeedback = async (id) => {
     try {
-      const res = await fetch(`/api/admin/feedback/approve/${id}`, { method: "POST" });
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch(`/api/admin/feedback/approve/${id}`, { method: "POST", headers });
       if (!res.ok) throw new Error();
       toast.success("Feedback approved!");
       fetchFeedbacks();
