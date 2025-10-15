@@ -24,6 +24,12 @@ const AdminDashboard = () => {
         >
           System Reports
         </button>
+        <button
+          onClick={() => navigate('/admin/feedback')}
+          className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-md"
+        >
+          Manage Feedback
+        </button>
       </div>
     </div>
   );
