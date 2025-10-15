@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
@@ -17,7 +16,7 @@ const API_BASE_URL = 'http://localhost:8084/api';
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
 const apiNoAuth = axios.create({ baseURL: API_BASE_URL, withCredentials: false });
-// Ensure no Authorization header is carried over
+// Ensure no Authorization header
 delete apiNoAuth.defaults.headers.common['Authorization'];
 
 export const AuthProvider = ({ children }) => {
