@@ -21,7 +21,8 @@ const AdminFeedback = () => {
       setPending(pendingRes);
       setApproved(approvedRes);
     } catch (err) {
-      toast.error("Failed to load feedbacks");
+    //   toast.error("Failed to load feedbacks");
+      console.error(err);
     } finally {
       setLoading(false);
     }
