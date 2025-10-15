@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
 
-      // Staff signup now JSON-only (no CV)
+      // Staff signup
       const response = await apiNoAuth.post('/public/signup/staff', userData, { withCredentials: false });
       return { success: true, data: response.data };
     } catch (error) {
