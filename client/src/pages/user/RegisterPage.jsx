@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState('PATIENT');
-  const [cvFile, setCvFile] = useState(null);
+  const [cvFile, setCvFile] = useState('');
   const { registerUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -24,7 +24,6 @@ const RegisterPage = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
   } = useForm();
 
   const onSubmit = async (data) => {
@@ -45,7 +44,14 @@ const RegisterPage = () => {
     }
   };
 
-  const handleFileChange = () => {};
+  // removed duplicate handleFileChange declaration
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setCvFile(e.target.files[0].name || '');
+    } else {
+      setCvFile('');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -346,11 +352,12 @@ const RegisterPage = () => {
                       CV Local File Path (optional)
                     </label>
                     <input
-                      {...register('cvLocalPath')}
-                      type="text"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="C:\\Users\\You\\Documents\\cv.pdf"
+                      type="file"
+                      name="cv"
+                      onChange={handleFileChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
+                    {cvFile && <div>Selected file: {cvFile}</div>}
                   </div>
                 </div>
 

@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
@@ -17,7 +16,7 @@ const API_BASE_URL = 'http://localhost:8084/api';
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
 const apiNoAuth = axios.create({ baseURL: API_BASE_URL, withCredentials: false });
-// Ensure no Authorization header is carried over
+// Ensure no Authorization header
 delete apiNoAuth.defaults.headers.common['Authorization'];
 
 export const AuthProvider = ({ children }) => {
@@ -28,12 +27,12 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = useCallback(async () => {
     try {
       const response = await axios.get('/auth/me');
-      // Debug: log response briefly to help trace 401/200
+      // Debug: log response to trace 401/200
       console.debug('[AuthContext] /auth/me response status:', response.status, 'data keys:', Object.keys(response.data || {}));
       setUser(response.data.data);
     } catch (error) {
       console.error('Error fetching user:', error);
-      // clear local auth state without calling logout() to keep this callback stable
+      // clear local auth state without calling logout()
       setUser(null);
       setToken(null);
       localStorage.removeItem('token');
@@ -81,7 +80,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
 
-      // Staff signup now JSON-only (no CV)
+      // Staff signup
       const response = await apiNoAuth.post('/public/signup/staff', userData, { withCredentials: false });
       return { success: true, data: response.data };
     } catch (error) {

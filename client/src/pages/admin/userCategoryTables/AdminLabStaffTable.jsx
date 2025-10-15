@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const AdminLabStaffTable = ({ onRemove, onStatusChange, onUpdate }) => {
+const AdminLabStaffTable = () => {
   const [labStaff, setLabStaff] = useState([]);
+  const [editingStaff, setEditingStaff] = useState(null);
+  const [form, setForm] = useState({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -19,6 +23,54 @@ const AdminLabStaffTable = ({ onRemove, onStatusChange, onUpdate }) => {
     load();
     return () => { mounted = false; };
   }, []);
+
+  // Remove lab staff
+  const handleRemove = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this lab staff?')) return;
+    try {
+      await axios.delete(`/admin/users/${id}`);
+      setLabStaff(labStaff => labStaff.filter(s => s.id !== id));
+    } catch {
+      alert('Failed to remove lab staff.');
+    }
+  };
+
+  // Open update modal
+  const handleUpdate = (staff) => {
+    setEditingStaff(staff);
+    setForm({
+      firstName: staff.firstName || '',
+      lastName: staff.lastName || '',
+      email: staff.email || '',
+      phoneNumber: staff.phoneNumber || '',
+      department: staff.department || '',
+      specialization: staff.specialization || '',
+      status: staff.status || 'active',
+    });
+    setModalOpen(true);
+  };
+
+  // Handle form change
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
+
+  // Submit update
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.put(`/admin/users/${editingStaff.id}`, form);
+      setLabStaff(labStaff => labStaff.map(s => s.id === editingStaff.id ? { ...s, ...form } : s));
+      setModalOpen(false);
+      setEditingStaff(null);
+    } catch {
+      alert('Failed to update lab staff.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -59,11 +111,9 @@ const AdminLabStaffTable = ({ onRemove, onStatusChange, onUpdate }) => {
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-700">{Array.isArray(staff.roles) ? staff.roles.join(', ') : '-'}</td>
                   <td className="px-4 py-2 whitespace-nowrap space-x-2">
-                    <button onClick={() => onRemove(staff.id)} className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 transition">Remove</button>
-                    <button onClick={() => onStatusChange(staff.id, staff.status === 'active' ? 'inactive' : 'active')} className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200 transition">
-                      {staff.status === 'active' ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <button onClick={() => onUpdate(staff)} className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition">Update</button>
+                    <button onClick={() => handleRemove(staff.id)} className="bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 transition">Remove</button>
+                    {/* ...existing code for status change... */}
+                    <button onClick={() => handleUpdate(staff)} className="bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition">Update</button>
                   </td>
                 </tr>
               ))
@@ -71,6 +121,52 @@ const AdminLabStaffTable = ({ onRemove, onStatusChange, onUpdate }) => {
           </tbody>
         </table>
       </div>
+
+      {/* Update Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold mb-4">Update Lab Staff</h3>
+            <form onSubmit={handleFormSubmit} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium">First Name</label>
+                <input name="firstName" value={form.firstName} onChange={handleFormChange} className="w-full border rounded px-2 py-1" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Last Name</label>
+                <input name="lastName" value={form.lastName} onChange={handleFormChange} className="w-full border rounded px-2 py-1" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Email</label>
+                <input name="email" value={form.email} onChange={handleFormChange} className="w-full border rounded px-2 py-1" type="email" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Phone</label>
+                <input name="phoneNumber" value={form.phoneNumber} onChange={handleFormChange} className="w-full border rounded px-2 py-1" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Department</label>
+                <input name="department" value={form.department} onChange={handleFormChange} className="w-full border rounded px-2 py-1" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Specialization</label>
+                <input name="specialization" value={form.specialization} onChange={handleFormChange} className="w-full border rounded px-2 py-1" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Status</label>
+                <select name="status" value={form.status} onChange={handleFormChange} className="w-full border rounded px-2 py-1">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              <div className="flex justify-end space-x-2 mt-4">
+                <button type="button" onClick={() => setModalOpen(false)} className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
+                <button type="submit" disabled={loading} className="px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700">{loading ? 'Saving...' : 'Save'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
