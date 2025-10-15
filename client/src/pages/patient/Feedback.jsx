@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { FaRegCommentDots } from "react-icons/fa";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Feedback = ({ patientId, onFeedbackSubmitted }) => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const { token } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,7 +17,10 @@ const Feedback = ({ patientId, onFeedbackSubmitted }) => {
     try {
       const res = await fetch("/api/patient/feedback", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ patientId, message }),
       });
       if (!res.ok) throw new Error("Failed to submit feedback");
