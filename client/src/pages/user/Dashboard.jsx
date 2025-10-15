@@ -3,9 +3,9 @@ import { LogOut, User, Shield, Stethoscope, Heart, Microscope } from 'lucide-rea
 // import { useNavigate } from 'react-router-dom';
 
 // Import role dashboards here
-import AdminDashboard from '../admin/AdminDashboard';
+import AdminDashboard from '../admin/AdminDashboard'; // admin dashboard
+import PatientDashboard from '../patient/PatientDashboard'; // patient dashboard
 import DoctorDashboard from '../doctor/DoctorDashboard';
-
 
 const Dashboard = () => {
   const { hasRole } = useAuth();
@@ -16,7 +16,7 @@ const Dashboard = () => {
   if (hasRole('DOCTOR')) return <DoctorDashboard />;
   if (hasRole('NURSE')) return <><h1>Set your dashboard here</h1></>;
   if (hasRole('LAB_TECHNICIAN')) return <><h1>Set your dashboard here</h1></>;
-  if (hasRole('PATIENT')) return <><h1>Set your dashboard here</h1></>;
+  if (hasRole('PATIENT')) return <PatientDashboard />;
 
 
   return (
