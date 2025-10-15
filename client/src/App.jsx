@@ -14,6 +14,7 @@ import AdminPatientsTable from './pages/admin/userCategoryTables/AdminPatientsTa
 import AdminLabStaffTable from './pages/admin/userCategoryTables/AdminLabStaffTable';
 import AdminAdminsTable from './pages/admin/userCategoryTables/AdminAdminsTable';
 import AdminContacts from './pages/admin/AdminContacts';
+import AdminFeedback from './pages/admin/AdminFeedback';
 import AdminLayout from './pages/admin/AdminLayout';
 import Profile from './pages/user/Profile';
 import Contact from './pages/Contact';
@@ -76,6 +77,7 @@ function AppContent() {
             <Route path="users/lab_technician" element={<AdminLabStaffTable />} />
             <Route path="users/admin" element={<AdminAdminsTable />} />
             <Route path="contacts" element={<AdminContacts />} />
+            <Route path="feedback" element={<AdminFeedback />} />
           </Route>
         </Routes>
       </div>
