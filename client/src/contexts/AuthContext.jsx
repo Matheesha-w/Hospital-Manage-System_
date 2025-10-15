@@ -28,12 +28,12 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = useCallback(async () => {
     try {
       const response = await axios.get('/auth/me');
-      // Debug: log response briefly to help trace 401/200
+      // Debug: log response to trace 401/200
       console.debug('[AuthContext] /auth/me response status:', response.status, 'data keys:', Object.keys(response.data || {}));
       setUser(response.data.data);
     } catch (error) {
       console.error('Error fetching user:', error);
-      // clear local auth state without calling logout() to keep this callback stable
+      // clear local auth state without calling logout()
       setUser(null);
       setToken(null);
       localStorage.removeItem('token');
