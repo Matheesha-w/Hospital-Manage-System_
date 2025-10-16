@@ -63,6 +63,7 @@ public class SurgeryDtos {
         private String status;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private LocalDateTime completedAt;
     }
 
     @Data

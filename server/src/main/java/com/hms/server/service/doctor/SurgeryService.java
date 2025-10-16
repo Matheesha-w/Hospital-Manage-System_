@@ -52,6 +52,15 @@ public class SurgeryService {
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    public List<SurgeryDtos.ResponseItem> getCompletedSurgeriesForCurrentDoctor() {
+        String doctorId = getCurrentUserId();
+        return surgeryRepository.findByDoctorIdOrderByScheduledAtAsc(doctorId)
+                .stream()
+                .filter(surgery -> surgery.getStatus() == Surgery.Status.COMPLETED)
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public SurgeryDtos.ResponseItem markCompleted(String id) {
         String doctorId = getCurrentUserId();
         Surgery surgery = surgeryRepository.findById(id)
@@ -60,6 +69,7 @@ public class SurgeryService {
             throw new SecurityException("Not allowed");
         }
         surgery.setStatus(Surgery.Status.COMPLETED);
+        surgery.setCompletedAt(LocalDateTime.now());
         surgery.setUpdatedAt(LocalDateTime.now());
         return toResponse(surgeryRepository.save(surgery));
     }
@@ -162,6 +172,7 @@ public class SurgeryService {
         response.setStatus(surgery.getStatus() != null ? surgery.getStatus().name() : null);
         response.setCreatedAt(surgery.getCreatedAt());
         response.setUpdatedAt(surgery.getUpdatedAt());
+        response.setCompletedAt(surgery.getCompletedAt());
         return response;
     }
 }

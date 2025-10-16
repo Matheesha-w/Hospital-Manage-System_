@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import SurgeryTabs from './components/SurgeryTabs';
 import SurgeryMiniCharts from './components/SurgeryMiniCharts';
+import DoctorSidebar from './components/DoctorSidebar';
 
 const initialForm = { patientId: '', patientName: '', condition: '', urgency: '', notes: '', scheduledAt: '', operatingRoom: '', surgeryType: '' };
 
@@ -91,10 +92,13 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Doctor Dashboard</h1>
-      </div>
+    <div className="min-h-screen flex bg-gray-50">
+      <DoctorSidebar />
+      <main className="flex-1 overflow-auto">
+        <div className="max-w-6xl mx-auto p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Doctor Dashboard</h1>
+          </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-white rounded shadow p-4 border-l-4 border-emerald-500">
@@ -219,6 +223,8 @@ export default function DoctorDashboard() {
           </div>
         </div>
       )}
+        </div>
+      </main>
     </div>
   );
 }
