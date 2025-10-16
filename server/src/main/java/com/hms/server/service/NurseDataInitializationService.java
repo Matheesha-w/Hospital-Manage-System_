@@ -4,6 +4,7 @@ import com.hms.server.model.*;
 import com.hms.server.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Profile("seed")
 public class NurseDataInitializationService implements CommandLineRunner {
     
     @Autowired
