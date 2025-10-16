@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { FaUserCircle, FaEdit, FaComments } from "react-icons/fa";
+import { FaUserCircle, FaEdit, FaComments, FaClock, FaCheckCircle, FaProcedures, FaHospital } from "react-icons/fa";
 import Feedback from "./Feedback";
 import EditProfile from "./EditProfile";
 
 import { useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import axios from "axios";
 
 const PatientDashboard = () => {
 	const { token } = useAuth();
@@ -13,6 +14,13 @@ const PatientDashboard = () => {
 	const [showFeedback, setShowFeedback] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+
+	// Surgeries state
+	const [upcomingSurgeries, setUpcomingSurgeries] = useState([]);
+	const [completedSurgeries, setCompletedSurgeries] = useState([]);
+	const [surgeriesLoading, setSurgeriesLoading] = useState(false);
+	const [surgeriesError, setSurgeriesError] = useState("");
+	const [activeSurgeryTab, setActiveSurgeryTab] = useState("pending");
 
 	useEffect(() => {
 		let active = true;
@@ -37,6 +45,36 @@ const PatientDashboard = () => {
 			}
 		};
 		loadMe();
+		return () => {
+			active = false;
+		};
+	}, [token]);
+
+	// Load surgeries for current patient
+	useEffect(() => {
+		let active = true;
+		const loadSurgeries = async () => {
+			if (!token) return;
+			setSurgeriesLoading(true);
+			setSurgeriesError("");
+			try {
+				const [upRes, compRes] = await Promise.all([
+					axios.get("/patient/surgeries"),
+					axios.get("/patient/surgeries/completed"),
+				]);
+				const up = upRes?.data?.data || [];
+				const comp = compRes?.data?.data || [];
+				if (active) {
+					setUpcomingSurgeries(up);
+					setCompletedSurgeries(comp);
+				}
+			} catch (e) {
+				if (active) setSurgeriesError(e.response?.data?.message || e.message || "Failed to load surgeries");
+			} finally {
+				if (active) setSurgeriesLoading(false);
+			}
+		};
+		loadSurgeries();
 		return () => {
 			active = false;
 		};
@@ -149,6 +187,116 @@ const PatientDashboard = () => {
 								<div className="mt-5 border-t border-slate-100 pt-5">
 									<Feedback patientId={user.id} />
 								</div>
+							)}
+						</div>
+					</div>
+				</div>
+
+				{/* Surgeries card */}
+				<div className="mt-6">
+					<div className="bg-white rounded-2xl shadow border border-slate-100 p-6">
+						<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+							<div>
+								<h3 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
+									<FaProcedures className="text-sky-600" />
+									Surgery Schedule
+								</h3>
+								<p className="text-sm text-slate-500">Track your upcoming procedures and review completed surgeries.</p>
+							</div>
+							<div className="inline-flex rounded-full bg-slate-100 p-1">
+								<button
+									type="button"
+									className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition ${
+										activeSurgeryTab === "pending"
+											? "bg-white shadow text-sky-600"
+											: "text-slate-500 hover:text-slate-700"
+									}`}
+									onClick={() => setActiveSurgeryTab("pending")}
+								>
+									<FaClock /> Pending
+									<span className="ml-1 inline-flex items-center justify-center rounded-full bg-sky-100 text-sky-700 text-xs px-2 py-0.5">
+										{upcomingSurgeries.length}
+									</span>
+								</button>
+								<button
+									type="button"
+									className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition ${
+										activeSurgeryTab === "completed"
+											? "bg-white shadow text-emerald-600"
+											: "text-slate-500 hover:text-slate-700"
+									}`}
+									onClick={() => setActiveSurgeryTab("completed")}
+								>
+									<FaCheckCircle /> Completed
+									<span className="ml-1 inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5">
+										{completedSurgeries.length}
+									</span>
+								</button>
+							</div>
+						</div>
+						{surgeriesLoading && (
+							<div className="mt-4 text-sm text-slate-500 flex items-center gap-2">
+								<FaHospital className="text-slate-400" /> Loading surgeries...
+							</div>
+						)}
+						{surgeriesError && <div className="mt-4 text-sm text-red-600">{surgeriesError}</div>}
+						<div className="mt-6 space-y-4">
+							{(activeSurgeryTab === "pending" ? upcomingSurgeries : completedSurgeries).length === 0 && !surgeriesLoading ? (
+								<div className="border border-dashed border-slate-200 rounded-xl p-6 text-center text-sm text-slate-500">
+									{activeSurgeryTab === "pending" ? "No pending surgeries scheduled." : "No completed surgeries yet."}
+								</div>
+							) : (
+								(activeSurgeryTab === "pending" ? upcomingSurgeries : completedSurgeries).map((s) => (
+									<div
+										key={s.id}
+										className={`border border-slate-100 rounded-xl p-5 transition ${
+											activeSurgeryTab === "completed" ? "bg-emerald-50/60" : "hover:bg-slate-50"
+										}`}
+									>
+										<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+											<div>
+												<div className="text-slate-900 font-semibold text-base flex items-center gap-2">
+													{activeSurgeryTab === "completed" ? (
+														<FaCheckCircle className="text-emerald-500" />
+													) : (
+														<FaClock className="text-amber-500" />
+													)}
+													{s.condition}
+												</div>
+												<div className="text-sm text-slate-500 mt-0.5">{s.surgeryType}</div>
+											</div>
+											<div className="flex items-center gap-2">
+												<span className={`text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full ${
+													activeSurgeryTab === "completed"
+														? "bg-emerald-100 text-emerald-700"
+														: "bg-amber-100 text-amber-700"
+												}`}>{activeSurgeryTab === "completed" ? "Completed" : s.urgency}</span>
+											</div>
+										</div>
+										<div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600">
+											<div>
+												<span className="font-medium text-slate-700">Operating Room:</span> {s.operatingRoom}
+											</div>
+											<div>
+												<span className="font-medium text-slate-700">Scheduled:</span> {s.scheduledAt ? new Date(s.scheduledAt).toLocaleString() : "-"}
+											</div>
+											{activeSurgeryTab === "completed" && (
+												<div>
+													<span className="font-medium text-slate-700">Completed:</span> {s.completedAt ? new Date(s.completedAt).toLocaleString() : "-"}
+												</div>
+											)}
+											<div>
+												<span className="font-medium text-slate-700">Doctor:</span> {s.doctorName || "-"}
+												<div className="text-xs text-slate-500 break-all">{s.doctorEmail || "-"}</div>
+											</div>
+										</div>
+										{s.notes && (
+											<div className="mt-3 text-sm text-slate-600">
+												<span className="font-medium text-slate-700">Notes:</span> {s.notes}
+											</div>
+										)}
+									</div>
+								))
 							)}
 						</div>
 					</div>
