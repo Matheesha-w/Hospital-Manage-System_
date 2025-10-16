@@ -74,7 +74,8 @@ public class User {
         PATIENT,
         DOCTOR,
         NURSE,
-        LAB_TECHNICIAN
+        LAB_TECHNICIAN,
+        PHARMACIST
     }
     
     public boolean hasRole(Role role) {
@@ -84,6 +85,7 @@ public class User {
     public boolean isStaff() {
         return roles != null && (roles.contains(Role.DOCTOR) || 
                                 roles.contains(Role.NURSE) || 
-                                roles.contains(Role.LAB_TECHNICIAN));
+                                roles.contains(Role.LAB_TECHNICIAN) ||
+                                roles.contains(Role.PHARMACIST));
     }
 }

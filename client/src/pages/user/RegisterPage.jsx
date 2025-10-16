@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, User, Mail, Phone, MapPin, Calendar, FileText, Stethoscope, Heart, Microscope } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Phone, MapPin, Calendar, FileText, Stethoscope, Heart, Microscope, Pill } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const RegisterPage = () => {
@@ -15,7 +15,7 @@ const RegisterPage = () => {
 
   useEffect(() => {
     const roleParam = searchParams.get('role');
-    if (roleParam && ['PATIENT', 'DOCTOR', 'NURSE', 'LAB_TECHNICIAN'].includes(roleParam)) {
+    if (roleParam && ['PATIENT', 'DOCTOR', 'NURSE', 'LAB_TECHNICIAN', 'PHARMACIST'].includes(roleParam)) {
       setSelectedRole(roleParam);
     }
   }, [searchParams]);
@@ -70,7 +70,7 @@ const RegisterPage = () => {
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select Your Role
             </label>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <button
                 type="button"
                 onClick={() => setSelectedRole('PATIENT')}
@@ -121,6 +121,19 @@ const RegisterPage = () => {
               >
                 <Microscope className="h-8 w-8 mx-auto mb-2 text-purple-500" />
                 <div className="font-medium">Lab Tech</div>
+                <div className="text-sm text-gray-500">Requires approval</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedRole('PHARMACIST')}
+                className={`p-4 border rounded-lg text-center transition-colors ${
+                  selectedRole === 'PHARMACIST'
+                    ? 'border-orange-500 bg-orange-50 text-orange-700'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <Pill className="h-8 w-8 mx-auto mb-2 text-orange-500" />
+                <div className="font-medium">Pharmacist</div>
                 <div className="text-sm text-gray-500">Requires approval</div>
               </button>
             </div>
