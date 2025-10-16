@@ -37,6 +37,12 @@ public class DoctorSurgeryController {
         return ResponseEntity.ok(new ApiResponse(true, "Counts fetched", counts));
     }
 
+    @GetMapping("/completed")
+    public ResponseEntity<ApiResponse> getCompletedSurgeries() {
+        List<SurgeryDtos.ResponseItem> completedSurgeries = surgeryService.getCompletedSurgeriesForCurrentDoctor();
+        return ResponseEntity.ok(new ApiResponse(true, "Completed surgeries fetched", completedSurgeries));
+    }
+
     @PutMapping
     public ResponseEntity<ApiResponse> update(@Valid @RequestBody SurgeryDtos.UpdateRequest request) {
         var updated = surgeryService.update(request);

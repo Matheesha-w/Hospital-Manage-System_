@@ -12,17 +12,28 @@ import AdminDoctorsTable from './pages/admin/userCategoryTables/AdminDoctorsTabl
 import AdminNursesTable from './pages/admin/userCategoryTables/AdminNursesTable';
 import AdminPatientsTable from './pages/admin/userCategoryTables/AdminPatientsTable';
 import AdminLabStaffTable from './pages/admin/userCategoryTables/AdminLabStaffTable';
+import AdminPharmacistsTable from './pages/admin/userCategoryTables/AdminPharmacistsTable';
 import AdminAdminsTable from './pages/admin/userCategoryTables/AdminAdminsTable';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminFeedback from './pages/admin/AdminFeedback';
 import AdminLayout from './pages/admin/AdminLayout';
 import Profile from './pages/user/Profile';
+import PatientDashboard from './pages/patient/PatientDashboard';
+import PharmacistDashboard from './pages/pharmacist/PharmacistDashboard';
+import InventoryManagement from './pages/pharmacist/InventoryManagement';
+import PrescriptionsManagement from './pages/pharmacist/PrescriptionsManagement';
+import AddEditDrug from './pages/pharmacist/AddEditDrug';
 import Contact from './pages/Contact';
 import About from './pages/About';
 import News from './pages/News';
 import LandingPage from './pages/LandingPage';
+
 import NurseAbout from './pages/nurse/NurseAbout';
 import NurseContact from './pages/nurse/NurseContact';
+import DoctorDashboard from './pages/doctor/DoctorDashboard';
+import SurgeryHistory from './pages/doctor/SurgeryHistory';
+import SurgeryAnalytics from './pages/doctor/SurgeryAnalytics';
+
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -79,10 +90,69 @@ function AppContent() {
             <Route path="users/doctor" element={<AdminDoctorsTable />} />
             <Route path="users/nurse" element={<AdminNursesTable />} />
             <Route path="users/lab_technician" element={<AdminLabStaffTable />} />
+            <Route path="users/pharmacist" element={<AdminPharmacistsTable />} />
             <Route path="users/admin" element={<AdminAdminsTable />} />
             <Route path="contacts" element={<AdminContacts />} />
             <Route path="feedback" element={<AdminFeedback />} />
           </Route>
+          
+          {/* Pharmacist Routes */}
+          <Route path="/pharmacist/dashboard" element={
+            <ProtectedRoute requiredRoles={['PHARMACIST']}>
+              <PharmacistDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/pharmacist/inventory" element={
+            <ProtectedRoute requiredRoles={['PHARMACIST']}>
+              <InventoryManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/pharmacist/inventory/add" element={
+            <ProtectedRoute requiredRoles={['PHARMACIST']}>
+              <AddEditDrug />
+            </ProtectedRoute>
+          } />
+          <Route path="/pharmacist/inventory/edit/:id" element={
+            <ProtectedRoute requiredRoles={['PHARMACIST']}>
+              <AddEditDrug />
+            </ProtectedRoute>
+          } />
+          <Route path="/pharmacist/prescriptions" element={
+            <ProtectedRoute requiredRoles={['PHARMACIST']}>
+              <PrescriptionsManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/pharmacist/reports" element={
+            <ProtectedRoute requiredRoles={['PHARMACIST']}>
+              <div className="min-h-screen flex items-center justify-center">
+                <h1 className="text-2xl font-bold">Reports Page - Coming Soon</h1>
+              </div>
+            </ProtectedRoute>
+          } />
+          <Route path="/pharmacist/settings" element={
+            <ProtectedRoute requiredRoles={['PHARMACIST']}>
+              <div className="min-h-screen flex items-center justify-center">
+                <h1 className="text-2xl font-bold">Settings Page - Coming Soon</h1>
+              </div>
+            </ProtectedRoute>
+          } />
+
+          {/* Doctor Routes */}
+          <Route path="/doctor/dashboard" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/history" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <SurgeryHistory />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/analytics" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <SurgeryAnalytics />
+            </ProtectedRoute>
+          } />
         </Routes>
       </div>
     </Router>
