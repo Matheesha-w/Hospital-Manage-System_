@@ -5,6 +5,7 @@ import EditProfile from "./EditProfile";
 
 import { useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import axios from "axios";
 
 const PatientDashboard = () => {
 	const { token } = useAuth();
@@ -13,6 +14,12 @@ const PatientDashboard = () => {
 	const [showFeedback, setShowFeedback] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+
+	// Surgeries state
+	const [upcomingSurgeries, setUpcomingSurgeries] = useState([]);
+	const [completedSurgeries, setCompletedSurgeries] = useState([]);
+	const [surgeriesLoading, setSurgeriesLoading] = useState(false);
+	const [surgeriesError, setSurgeriesError] = useState("");
 
 	useEffect(() => {
 		let active = true;
@@ -37,6 +44,36 @@ const PatientDashboard = () => {
 			}
 		};
 		loadMe();
+		return () => {
+			active = false;
+		};
+	}, [token]);
+
+	// Load surgeries for current patient
+	useEffect(() => {
+		let active = true;
+		const loadSurgeries = async () => {
+			if (!token) return;
+			setSurgeriesLoading(true);
+			setSurgeriesError("");
+			try {
+				const [upRes, compRes] = await Promise.all([
+					axios.get("/patient/surgeries"),
+					axios.get("/patient/surgeries/completed"),
+				]);
+				const up = upRes?.data?.data || [];
+				const comp = compRes?.data?.data || [];
+				if (active) {
+					setUpcomingSurgeries(up);
+					setCompletedSurgeries(comp);
+				}
+			} catch (e) {
+				if (active) setSurgeriesError(e.response?.data?.message || e.message || "Failed to load surgeries");
+			} finally {
+				if (active) setSurgeriesLoading(false);
+			}
+		};
+		loadSurgeries();
 		return () => {
 			active = false;
 		};
@@ -149,6 +186,60 @@ const PatientDashboard = () => {
 								<div className="mt-5 border-t border-slate-100 pt-5">
 									<Feedback patientId={user.id} />
 								</div>
+							)}
+						</div>
+					</div>
+				</div>
+
+				{/* Surgeries grid */}
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+					{/* Upcoming surgeries */}
+					<div className="bg-white rounded-xl shadow border border-slate-100 p-6">
+						<div className="flex items-center justify-between">
+							<h3 className="text-lg font-semibold text-slate-800">Upcoming Surgeries</h3>
+							{surgeriesLoading && <span className="text-sm text-slate-500">Loading...</span>}
+						</div>
+						{surgeriesError && <div className="text-sm text-red-600 mt-2">{surgeriesError}</div>}
+						<div className="mt-4 space-y-4">
+							{(upcomingSurgeries || []).length === 0 && !surgeriesLoading ? (
+								<div className="text-slate-500 text-sm">No upcoming surgeries.</div>
+							) : (
+								upcomingSurgeries.map((s) => (
+									<div key={s.id} className="border border-slate-100 rounded-lg p-4 hover:bg-slate-50 transition">
+										<div className="flex items-center justify-between">
+											<div className="text-slate-900 font-medium">{s.condition} <span className="text-slate-500 text-sm">• {s.surgeryType}</span></div>
+											<div className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">{s.urgency}</div>
+										</div>
+										<div className="mt-1 text-sm text-slate-600">Room: <span className="text-slate-800 font-medium">{s.operatingRoom}</span></div>
+										<div className="mt-1 text-sm text-slate-600">Scheduled: <span className="text-slate-800 font-medium">{s.scheduledAt ? new Date(s.scheduledAt).toLocaleString() : '-'}</span></div>
+										<div className="mt-2 text-sm text-slate-600">Doctor: <span className="text-slate-800 font-medium">{s.doctorName || '-'}</span> <span className="text-slate-400">•</span> <span className="break-all">{s.doctorEmail || '-'}</span></div>
+										{s.notes && <div className="mt-2 text-sm text-slate-600">Notes: <span className="text-slate-700">{s.notes}</span></div>}
+									</div>
+								))
+							)}
+						</div>
+					</div>
+
+					{/* Completed surgeries */}
+					<div className="bg-white rounded-xl shadow border border-slate-100 p-6">
+						<h3 className="text-lg font-semibold text-slate-800">Completed Surgeries</h3>
+						<div className="mt-4 space-y-4">
+							{(completedSurgeries || []).length === 0 && !surgeriesLoading ? (
+								<div className="text-slate-500 text-sm">No completed surgeries.</div>
+							) : (
+								completedSurgeries.map((s) => (
+									<div key={s.id} className="border border-slate-100 rounded-lg p-4 bg-slate-50">
+										<div className="flex items-center justify-between">
+											<div className="text-slate-900 font-medium">{s.condition} <span className="text-slate-500 text-sm">• {s.surgeryType}</span></div>
+											<div className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">COMPLETED</div>
+										</div>
+										<div className="mt-1 text-sm text-slate-600">Room: <span className="text-slate-800 font-medium">{s.operatingRoom}</span></div>
+										<div className="mt-1 text-sm text-slate-600">Scheduled: <span className="text-slate-800 font-medium">{s.scheduledAt ? new Date(s.scheduledAt).toLocaleString() : '-'}</span></div>
+										<div className="mt-1 text-sm text-slate-600">Completed: <span className="text-slate-800 font-medium">{s.completedAt ? new Date(s.completedAt).toLocaleString() : '-'}</span></div>
+										<div className="mt-2 text-sm text-slate-600">Doctor: <span className="text-slate-800 font-medium">{s.doctorName || '-'}</span> <span className="text-slate-400">•</span> <span className="break-all">{s.doctorEmail || '-'}</span></div>
+										{s.notes && <div className="mt-2 text-sm text-slate-600">Notes: <span className="text-slate-700">{s.notes}</span></div>}
+									</div>
+								))
 							)}
 						</div>
 					</div>
