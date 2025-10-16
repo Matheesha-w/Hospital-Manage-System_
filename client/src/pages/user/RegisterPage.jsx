@@ -179,7 +179,7 @@ const RegisterPage = () => {
             </div>
 
             <div>
-              <label htmlFor="username" className="block text.sm font-medium text-gray-700">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
               </label>
               <div className="mt-1 relative">
@@ -214,7 +214,7 @@ const RegisterPage = () => {
                     }
                   })}
                   type="email"
-                  className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your email"
                 />
               </div>
@@ -234,7 +234,7 @@ const RegisterPage = () => {
                     minLength: { value: 6, message: 'Password must be at least 6 characters' }
                   })}
                   type={showPassword ? 'text' : 'password'}
-                  className="pl-10 pr-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 pr-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Create a password"
                 />
                 <button
@@ -260,7 +260,7 @@ const RegisterPage = () => {
                   <input
                     {...register('phoneNumber')}
                     type="tel"
-                    className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Phone number"
                   />
                 </div>
@@ -275,7 +275,7 @@ const RegisterPage = () => {
                   <input
                     {...register('dateOfBirth')}
                     type="date"
-                    className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -290,7 +290,7 @@ const RegisterPage = () => {
                 <input
                   {...register('address')}
                   type="text"
-                  className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Your address"
                 />
               </div>
@@ -308,7 +308,7 @@ const RegisterPage = () => {
                         required: selectedRole === 'DOCTOR' ? 'Specialization is required for doctors' : false
                       })}
                       type="text"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder={selectedRole === 'DOCTOR' ? 'Medical specialization' : 'Area of expertise'}
                     />
                     {errors.specialization && (
@@ -323,7 +323,7 @@ const RegisterPage = () => {
                     <input
                       {...register('department')}
                       type="text"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Department"
                     />
                   </div>
@@ -339,7 +339,7 @@ const RegisterPage = () => {
                         required: 'License number is required for doctors'
                       })}
                       type="text"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Professional license number"
                     />
                     {errors.licenseNumber && (
@@ -356,7 +356,7 @@ const RegisterPage = () => {
                     <input
                       {...register('linkedinUrl')}
                       type="url"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline.none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder="https://www.linkedin.com/in/username"
                     />
                   </div>
@@ -382,7 +382,7 @@ const RegisterPage = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline.none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Creating account...' : 'Create account'}
               </button>
