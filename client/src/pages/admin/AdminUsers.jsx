@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, Stethoscope, Heart, Microscope, UserPlus } from 'lucide-react';
+import { Users, Stethoscope, Heart, Microscope, Pill, UserPlus } from 'lucide-react';
 
 const categories = [
   { key: 'PATIENT', label: 'Patients', icon: Users, color: 'bg-blue-50', dot: 'text-blue-600' },
   { key: 'DOCTOR', label: 'Doctors', icon: Stethoscope, color: 'bg-green-50', dot: 'text-green-600' },
   { key: 'NURSE', label: 'Nurses', icon: Heart, color: 'bg-pink-50', dot: 'text-pink-600' },
-  { key: 'LAB_TECHNICIAN', label: 'Lab Techs', icon: Microscope, color: 'bg-purple-50', dot: 'text-purple-600' }
+  { key: 'LAB_TECHNICIAN', label: 'Lab Techs', icon: Microscope, color: 'bg-purple-50', dot: 'text-purple-600' },
+  { key: 'PHARMACIST', label: 'Pharmacists', icon: Pill, color: 'bg-orange-50', dot: 'text-orange-600' }
 ];
 
 export default function AdminUsers() {
@@ -24,7 +25,7 @@ export default function AdminUsers() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
