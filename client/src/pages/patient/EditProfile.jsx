@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaUserEdit } from "react-icons/fa";
-
 import { useAuth } from "../../contexts/AuthContext";
+import axios from "axios";
 
 const EditProfile = ({ user, onSave, onCancel }) => {
   const { token } = useAuth();
@@ -26,20 +26,19 @@ const EditProfile = ({ user, onSave, onCancel }) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (!token) {
+      setError("Authentication token is missing. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Replace with your actual API endpoint
-      const res = await fetch(`/api/user/${user.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error("Failed to update profile");
-      if (onSave) onSave(form);
+      const { data } = await axios.put('/auth/me', form);
+      if (onSave) onSave(data?.data || form);
     } catch (err) {
-      setError(err.message);
+      console.error("Update error:", err);
+      setError(err.message || "An error occurred while updating your profile");
     } finally {
       setLoading(false);
     }
@@ -108,7 +107,6 @@ const EditProfile = ({ user, onSave, onCancel }) => {
         onChange={handleChange}
         placeholder="Address"
       />
-      {/* Add more fields as needed */}
       <div className="flex gap-2">
         <button
           type="submit"
