@@ -6,12 +6,13 @@ A comprehensive Hospital Management System built with React + Vite + Tailwind CS
 
 ### Authentication & Authorization
 - **JWT-based authentication** with secure token management
-- **Role-based access control** with 5 user types:
+- **Role-based access control** with 6 user types:
   - **Admin**: Full system access and user management
   - **Patient**: Direct registration and access
   - **Doctor**: Requires admin approval + CV submission
   - **Nurse**: Requires admin approval + CV submission
   - **Lab Technician**: Requires admin approval + CV submission
+  - **Pharmacist**: Requires admin approval + CV submission
 
 ### User Management
 - **Patient Registration**: Direct access without approval
@@ -24,6 +25,13 @@ A comprehensive Hospital Management System built with React + Vite + Tailwind CS
 - **File Upload Security**: CV upload with validation
 - **Password Encryption**: BCrypt password hashing
 - **CORS Configuration**: Proper cross-origin setup
+
+### Pharmacist Features
+- **Prescription Management**: View, update status, dispense medications
+- **Drug Inventory Management**: Monitor stock levels, update quantities
+- **Report Generation**: Sales reports, stock distribution, inventory summaries
+- **Medication Dispensing**: Track dispensed medications and statuses
+- **Substitution Requests**: Request medication substitutions when needed
 
 ## 🚀 Quick Start
 
