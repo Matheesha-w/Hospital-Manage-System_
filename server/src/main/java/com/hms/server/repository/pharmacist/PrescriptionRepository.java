@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
+@Repository("pharmacistPrescriptionRepository")
 public interface PrescriptionRepository extends MongoRepository<Prescription, String> {
     
     List<Prescription> findByStatus(PrescriptionStatus status);
