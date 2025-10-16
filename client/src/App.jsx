@@ -27,6 +27,9 @@ import Contact from './pages/Contact';
 import About from './pages/About';
 import News from './pages/News';
 import LandingPage from './pages/LandingPage';
+import DoctorDashboard from './pages/doctor/DoctorDashboard';
+import SurgeryHistory from './pages/doctor/SurgeryHistory';
+import SurgeryAnalytics from './pages/doctor/SurgeryAnalytics';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -125,6 +128,23 @@ function AppContent() {
               <div className="min-h-screen flex items-center justify-center">
                 <h1 className="text-2xl font-bold">Settings Page - Coming Soon</h1>
               </div>
+            </ProtectedRoute>
+          } />
+
+          {/* Doctor Routes */}
+          <Route path="/doctor/dashboard" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/history" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <SurgeryHistory />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/analytics" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <SurgeryAnalytics />
             </ProtectedRoute>
           } />
         </Routes>
