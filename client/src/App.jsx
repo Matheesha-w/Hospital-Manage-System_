@@ -27,9 +27,13 @@ import Contact from './pages/Contact';
 import About from './pages/About';
 import News from './pages/News';
 import LandingPage from './pages/LandingPage';
+
+import NurseAbout from './pages/nurse/NurseAbout';
+import NurseContact from './pages/nurse/NurseContact';
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
 import SurgeryHistory from './pages/doctor/SurgeryHistory';
 import SurgeryAnalytics from './pages/doctor/SurgeryAnalytics';
+
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -52,6 +56,8 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/news" element={<News />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/nurse/about" element={<NurseAbout />} />
+          <Route path="/nurse/contact" element={<NurseContact />} />
           <Route 
             path="/login" 
             element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} 

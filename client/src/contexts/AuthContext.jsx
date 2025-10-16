@@ -55,17 +55,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
+      console.log('Attempting login with:', credentials);
       const response = await axios.post('/auth/signin', credentials);
+      console.log('Login response:', response.data);
       const { accessToken, ...userData } = response.data;
       
-  setToken(accessToken);
-  console.debug('[AuthContext] login received token length:', accessToken?.length);
+      setToken(accessToken);
+      console.debug('[AuthContext] login received token length:', accessToken?.length);
       setUser(userData);
       localStorage.setItem('token', accessToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       
       return { success: true, data: response.data };
     } catch (error) {
+      console.error('Login error:', error.response?.data || error.message);
       return { 
         success: false, 
         error: error.response?.data?.message || 'Login failed' 
@@ -75,15 +78,19 @@ export const AuthProvider = ({ children }) => {
 
   const registerUser = async (userData) => {
     try {
+      console.log('Attempting registration with:', userData);
       if (userData.role === 'PATIENT') {
         const response = await apiNoAuth.post('/auth/signup/patient', userData, { withCredentials: false });
+        console.log('Patient registration response:', response.data);
         return { success: true, data: response.data };
       }
 
       // Staff signup
       const response = await apiNoAuth.post('/public/signup/staff', userData, { withCredentials: false });
+      console.log('Staff registration response:', response.data);
       return { success: true, data: response.data };
     } catch (error) {
+      console.error('Registration error:', error.response?.data || error.message);
       return { 
         success: false, 
         error: error.response?.data?.message || 'Registration failed' 
