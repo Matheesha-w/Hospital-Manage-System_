@@ -100,7 +100,7 @@ const LandingPage = () => {
           <p className="mt-2 text-gray-600">Start with a free account and invite your staff in minutes.</p>
           <div className="mt-6 flex justify-center gap-3">
             <Link to="/register" className="bg-blue-600 text-white px-5 py-3 rounded-md font-medium hover:bg-blue-700">
-              Create your HMS account
+              Create your HealthCare Portal account
             </Link>
             <Link to="/login" className="px-5 py-3 rounded-md font-medium text-blue-700 bg-blue-100 hover:bg-blue-200">
               Sign in
@@ -112,7 +112,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} HMS. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} HealthCare Portal. All rights reserved.</p>
           <div className="flex gap-4 text-sm text-gray-600">
             <span>Security</span>
             <span>Status</span>

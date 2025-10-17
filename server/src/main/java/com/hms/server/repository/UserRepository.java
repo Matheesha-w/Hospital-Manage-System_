@@ -29,5 +29,6 @@ public interface UserRepository extends MongoRepository<User, String> {
     // Simple contains searches for filtering
     List<User> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
             String firstName, String lastName, String email);
- 
+
+    List<User> findByRolesContaining(User.Role role);
 }
