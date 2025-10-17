@@ -6,6 +6,7 @@ import com.hms.server.models.doctor.Surgery;
 import com.hms.server.repository.SurgeryRepository;
 import com.hms.server.repository.UserRepository;
 import com.hms.server.security.UserPrincipal;
+import com.hms.server.mappers.SurgeryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,13 +43,13 @@ public class SurgeryService {
         surgery.setUpdatedAt(LocalDateTime.now());
 
         Surgery saved = surgeryRepository.save(surgery);
-        return toResponse(saved);
+        return SurgeryMapper.toResponse(saved);
     }
 
     public List<SurgeryDtos.ResponseItem> listForCurrentDoctor() {
         String doctorId = getCurrentUserId();
         return surgeryRepository.findByDoctorIdOrderByScheduledAtAsc(doctorId)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+                .stream().map(SurgeryMapper::toResponse).collect(Collectors.toList());
     }
 
     public List<SurgeryDtos.ResponseItem> getCompletedSurgeriesForCurrentDoctor() {
@@ -57,7 +57,7 @@ public class SurgeryService {
         return surgeryRepository.findByDoctorIdOrderByScheduledAtAsc(doctorId)
                 .stream()
                 .filter(surgery -> surgery.getStatus() == Surgery.Status.COMPLETED)
-                .map(this::toResponse)
+                .map(SurgeryMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +71,7 @@ public class SurgeryService {
         surgery.setStatus(Surgery.Status.COMPLETED);
         surgery.setCompletedAt(LocalDateTime.now());
         surgery.setUpdatedAt(LocalDateTime.now());
-        return toResponse(surgeryRepository.save(surgery));
+        return SurgeryMapper.toResponse(surgeryRepository.save(surgery));
     }
 
     public SurgeryDtos.CountsResponse getCountsForCurrentDoctor() {
@@ -112,7 +112,7 @@ public class SurgeryService {
         }
         surgery.setUpdatedAt(LocalDateTime.now());
 
-        return toResponse(surgeryRepository.save(surgery));
+        return SurgeryMapper.toResponse(surgeryRepository.save(surgery));
     }
 
     public void deleteById(String id) {
@@ -132,22 +132,7 @@ public class SurgeryService {
         if (!doctorId.equals(surgery.getDoctorId())) {
             throw new SecurityException("Not allowed");
         }
-        return toResponse(surgery);
-    }
-
-    public List<SurgeryDtos.ResponseItem> searchPatientsByName(String query) {
-        String q = Optional.ofNullable(query).orElse("").trim().toLowerCase();
-        return userRepository.findAll().stream()
-                .filter(u -> u.getRoles() != null && u.getRoles().contains(User.Role.PATIENT))
-                .filter(u -> (u.getFirstName() + " " + u.getLastName()).toLowerCase().contains(q))
-                .limit(20)
-                .map(u -> {
-                    SurgeryDtos.ResponseItem item = new SurgeryDtos.ResponseItem();
-                    item.setPatientId(u.getId());
-                    item.setPatientName(u.getFirstName() + " " + u.getLastName());
-                    return item;
-                })
-                .collect(Collectors.toList());
+        return SurgeryMapper.toResponse(surgery);
     }
 
     private String getCurrentUserId() {
@@ -158,23 +143,6 @@ public class SurgeryService {
         throw new SecurityException("Unauthenticated");
     }
 
-    private SurgeryDtos.ResponseItem toResponse(Surgery surgery) {
-        SurgeryDtos.ResponseItem response = new SurgeryDtos.ResponseItem();
-        response.setId(surgery.getId());
-        response.setPatientId(surgery.getPatientId());
-        response.setPatientName(surgery.getPatientName());
-        response.setCondition(surgery.getCondition());
-        response.setNotes(surgery.getNotes());
-        response.setOperatingRoom(surgery.getOperatingRoom());
-        response.setSurgeryType(surgery.getSurgeryType());
-        response.setUrgency(surgery.getUrgency());
-        response.setScheduledAt(surgery.getScheduledAt());
-        response.setStatus(surgery.getStatus() != null ? surgery.getStatus().name() : null);
-        response.setCreatedAt(surgery.getCreatedAt());
-        response.setUpdatedAt(surgery.getUpdatedAt());
-        response.setCompletedAt(surgery.getCompletedAt());
-        return response;
-    }
 }
 
 
