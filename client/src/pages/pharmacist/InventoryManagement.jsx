@@ -10,6 +10,9 @@ const InventoryManagement = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [loading, setLoading] = useState(true);
 
+  // API base URL configuration
+  const API_BASE_URL = 'http://localhost:8084/api/pharmacy';
+
   useEffect(() => {
     fetchInventory();
   }, []);
@@ -21,7 +24,7 @@ const InventoryManagement = () => {
   const fetchInventory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/pharmacy/inventory', {
+      const response = await fetch(`${API_BASE_URL}/inventory`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -60,7 +63,7 @@ const InventoryManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/pharmacy/inventory/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
