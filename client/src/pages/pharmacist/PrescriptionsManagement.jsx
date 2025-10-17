@@ -16,6 +16,9 @@ const PrescriptionsManagement = () => {
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const [substitutionReason, setSubstitutionReason] = useState('');
 
+  // API base URL configuration
+  const API_BASE_URL = 'http://localhost:8084/api/pharmacy';
+
   useEffect(() => {
     fetchPrescriptions();
   }, []);
@@ -27,7 +30,7 @@ const PrescriptionsManagement = () => {
   const fetchPrescriptions = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/pharmacy/prescriptions', {
+      const response = await fetch(`${API_BASE_URL}/prescriptions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -67,7 +70,7 @@ const PrescriptionsManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/pharmacy/dispense/${selectedPrescription.id}`, {
+      const response = await fetch(`${API_BASE_URL}/dispense/${selectedPrescription.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -101,7 +104,7 @@ const PrescriptionsManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/pharmacy/request-substitution/${selectedPrescription.id}`, {
+      const response = await fetch(`${API_BASE_URL}/request-substitution/${selectedPrescription.id}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

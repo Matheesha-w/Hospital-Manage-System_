@@ -27,18 +27,28 @@ public class AdminController {
     @GetMapping("/registration-requests")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getAllRegistrationRequests() {
-        List<RegistrationRequest> requests = registrationRequestRepository.findByStatus(RegistrationRequest.RequestStatus.PENDING);
-        return ResponseEntity.ok(new ApiResponse(true, "Registration requests retrieved successfully", requests));
+        try {
+            List<RegistrationRequest> requests = registrationRequestRepository.findByStatus(RegistrationRequest.RequestStatus.PENDING);
+            return ResponseEntity.ok(new ApiResponse(true, "Registration requests retrieved successfully", requests));
+        } catch (Exception ex) {
+            log.error("Failed to retrieve registration requests", ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to retrieve registration requests"));
+        }
     }
 
     @GetMapping("/registration-requests/{requestId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getRegistrationRequest(@PathVariable String requestId) {
-        Optional<RegistrationRequest> request = registrationRequestRepository.findById(requestId);
-        if (request.isPresent()) {
-            return ResponseEntity.ok(new ApiResponse(true, "Registration request retrieved successfully", request.get()));
-        } else {
-            return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+        try {
+            Optional<RegistrationRequest> request = registrationRequestRepository.findById(requestId);
+            if (request.isPresent()) {
+                return ResponseEntity.ok(new ApiResponse(true, "Registration request retrieved successfully", request.get()));
+            } else {
+                return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+            }
+        } catch (Exception ex) {
+            log.error("Failed to retrieve registration request {}", requestId, ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to retrieve registration request"));
         }
     }
 
@@ -47,37 +57,39 @@ public class AdminController {
     public ResponseEntity<ApiResponse> approveRegistrationRequest(
             @PathVariable String requestId,
             @RequestParam(required = false) String adminNotes) {
-        
-        Optional<RegistrationRequest> requestOpt = registrationRequestRepository.findById(requestId);
-        if (requestOpt.isEmpty()) {
-            return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+        try {
+            Optional<RegistrationRequest> requestOpt = registrationRequestRepository.findById(requestId);
+            if (requestOpt.isEmpty()) {
+                return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+            }
+
+            RegistrationRequest request = requestOpt.get();
+            if (request.getStatus() != RegistrationRequest.RequestStatus.PENDING) {
+                return ResponseEntity.ok(new ApiResponse(false, "Registration request is not pending"));
+            }
+
+            Optional<User> userOpt = userRepository.findById(request.getUserId());
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+            }
+
+            User user = userOpt.get();
+            user.setApproved(true);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+
+            request.setStatus(RegistrationRequest.RequestStatus.APPROVED);
+            request.setReviewedAt(LocalDateTime.now());
+            request.setAdminNotes(adminNotes);
+            registrationRequestRepository.save(request);
+
+            log.info("Registration request approved for user: {}", user.getUsername());
+
+            return ResponseEntity.ok(new ApiResponse(true, "Registration request approved successfully"));
+        } catch (Exception ex) {
+            log.error("Failed to approve registration request {}", requestId, ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to approve registration request"));
         }
-
-        RegistrationRequest request = requestOpt.get();
-        if (request.getStatus() != RegistrationRequest.RequestStatus.PENDING) {
-            return ResponseEntity.ok(new ApiResponse(false, "Registration request is not pending"));
-        }
-
-        // Update user approval status
-        Optional<User> userOpt = userRepository.findById(request.getUserId());
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
-        }
-
-        User user = userOpt.get();
-        user.setApproved(true);
-        user.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(user);
-
-        // Update registration request
-        request.setStatus(RegistrationRequest.RequestStatus.APPROVED);
-        request.setReviewedAt(LocalDateTime.now());
-        request.setAdminNotes(adminNotes);
-        registrationRequestRepository.save(request);
-
-        log.info("Registration request approved for user: {}", user.getUsername());
-
-        return ResponseEntity.ok(new ApiResponse(true, "Registration request approved successfully"));
     }
 
     @PostMapping("/registration-requests/{requestId}/reject")
@@ -85,84 +97,110 @@ public class AdminController {
     public ResponseEntity<ApiResponse> rejectRegistrationRequest(
             @PathVariable String requestId,
             @RequestParam(required = false) String adminNotes) {
-        
-        Optional<RegistrationRequest> requestOpt = registrationRequestRepository.findById(requestId);
-        if (requestOpt.isEmpty()) {
-            return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+        try {
+            Optional<RegistrationRequest> requestOpt = registrationRequestRepository.findById(requestId);
+            if (requestOpt.isEmpty()) {
+                return ResponseEntity.ok(new ApiResponse(false, "Registration request not found"));
+            }
+
+            RegistrationRequest request = requestOpt.get();
+            if (request.getStatus() != RegistrationRequest.RequestStatus.PENDING) {
+                return ResponseEntity.ok(new ApiResponse(false, "Registration request is not pending"));
+            }
+
+            request.setStatus(RegistrationRequest.RequestStatus.REJECTED);
+            request.setReviewedAt(LocalDateTime.now());
+            request.setAdminNotes(adminNotes);
+            registrationRequestRepository.save(request);
+
+            Optional<User> userOpt = userRepository.findById(request.getUserId());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                user.setActive(false);
+                user.setUpdatedAt(LocalDateTime.now());
+                userRepository.save(user);
+            }
+
+            log.info("Registration request rejected for user: {}", request.getUsername());
+
+            return ResponseEntity.ok(new ApiResponse(true, "Registration request rejected successfully"));
+        } catch (Exception ex) {
+            log.error("Failed to reject registration request {}", requestId, ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to reject registration request"));
         }
-
-        RegistrationRequest request = requestOpt.get();
-        if (request.getStatus() != RegistrationRequest.RequestStatus.PENDING) {
-            return ResponseEntity.ok(new ApiResponse(false, "Registration request is not pending"));
-        }
-
-        // Update registration request
-        request.setStatus(RegistrationRequest.RequestStatus.REJECTED);
-        request.setReviewedAt(LocalDateTime.now());
-        request.setAdminNotes(adminNotes);
-        registrationRequestRepository.save(request);
-
-        // Optionally deactivate the user
-        Optional<User> userOpt = userRepository.findById(request.getUserId());
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            user.setActive(false);
-            user.setUpdatedAt(LocalDateTime.now());
-            userRepository.save(user);
-        }
-
-        log.info("Registration request rejected for user: {}", request.getUsername());
-
-        return ResponseEntity.ok(new ApiResponse(true, "Registration request rejected successfully"));
     }
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return ResponseEntity.ok(new ApiResponse(true, "Users retrieved successfully", users));
+        try {
+            List<User> users = userRepository.findAll();
+            return ResponseEntity.ok(new ApiResponse(true, "Users retrieved successfully", users));
+        } catch (Exception ex) {
+            log.error("Failed to retrieve users", ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to retrieve users"));
+        }
     }
 
     @GetMapping("/users/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getUser(@PathVariable String userId) {
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isPresent()) {
-            return ResponseEntity.ok(new ApiResponse(true, "User retrieved successfully", user.get()));
-        } else {
-            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+        try {
+            Optional<User> user = userRepository.findById(userId);
+            if (user.isPresent()) {
+                return ResponseEntity.ok(new ApiResponse(true, "User retrieved successfully", user.get()));
+            } else {
+                return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+            }
+            // Returns user if found
+        } catch (Exception ex) {
+            log.error("Failed to retrieve user {}", userId, ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to retrieve user"));
+            // Returns internal server error if any other exception occurs
         }
     }
 
     @PostMapping("/users/{userId}/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> activateUser(@PathVariable String userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+            }
+
+            User user = userOpt.get();
+            user.setActive(true);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+
+            return ResponseEntity.ok(new ApiResponse(true, "User activated successfully"));
+        } catch (Exception ex) {
+            log.error("Failed to activate user {}", userId, ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to activate user"));
+            // Returns internal server error if any other exception occurs
         }
-
-        User user = userOpt.get();
-        user.setActive(true);
-        user.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new ApiResponse(true, "User activated successfully"));
     }
 
     @PostMapping("/users/{userId}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deactivateUser(@PathVariable String userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.ok(new ApiResponse(false, "User not found"));
+            }
+
+            User user = userOpt.get();
+            user.setActive(false);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+
+            return ResponseEntity.ok(new ApiResponse(true, "User deactivated successfully"));
+        } catch (Exception ex) {
+            log.error("Failed to deactivate user {}", userId, ex);
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to deactivate user"));
+            // Returns internal server error if any other exception occurs
         }
-
-        User user = userOpt.get();
-        user.setActive(false);
-        user.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new ApiResponse(true, "User deactivated successfully"));
     }
 }

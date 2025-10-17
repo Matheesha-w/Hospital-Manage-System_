@@ -20,7 +20,7 @@ export default function DoctorSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 shadow-sm sticky top-0 h-screen flex flex-col">
+    <aside className="w-64 bg-green-200 border-r border-gray-200 shadow-sm sticky top-0 h-screen flex flex-col">
       <div className="p-4 flex-1 flex flex-col">
         {/* User Profile Section */}
         <div className="flex items-center gap-3 mb-6 p-3 bg-blue-50 rounded-lg">
@@ -47,7 +47,7 @@ export default function DoctorSidebar() {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`flex flex-1 items-center gap-3 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex flex-1 items-center gap-3 px-3 rounded-lg text-base font-bold transition-colors ${
                     isActive
                       ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-600'
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'

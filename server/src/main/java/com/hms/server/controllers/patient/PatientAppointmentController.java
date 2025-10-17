@@ -22,7 +22,10 @@ import java.util.List;
 public class PatientAppointmentController {
 
     private final PatientAppointmentService patientAppointmentService;
-
+    /**
+     * Service layer for handling all patient related operations.
+     */
+    
     @GetMapping("/doctors")
     public ResponseEntity<ApiResponse> listDoctors() {
         List<AppointmentDtos.DoctorOption> doctors = patientAppointmentService.listDoctors();
