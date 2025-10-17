@@ -35,6 +35,12 @@ public class NurseService {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    private VitalsRepository vitalsRepository;
+
+    @Autowired
+    private NurseNoteRepository nurseNoteRepository;
+    
     // Create a prescription by patient email (nurse flow)
     public PrescriptionResponse createPrescriptionByPatientEmail(NurseCreatePrescriptionRequest req, String nurseId) {
         User user = userRepository.findByEmail(req.getPatientEmail())
@@ -74,6 +80,66 @@ public class NurseService {
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found for email: " + patientEmail));
         List<Prescription> list = prescriptionRepository.findByPatientId(user.getId());
         return list.stream().map(PrescriptionResponse::fromPrescription).collect(Collectors.toList());
+    }
+
+    // Record vitals by patient email (nurse flow)
+    public Vitals recordVitals(VitalsRequest request, String nurseId) {
+        User user = userRepository.findByEmail(request.getPatientEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found for email: " + request.getPatientEmail()));
+        if (!user.isActive() || !user.hasRole(User.Role.PATIENT)) {
+            throw new IllegalArgumentException("Provided email does not belong to an active patient");
+        }
+
+        Vitals v = new Vitals();
+        v.setId(null);
+        v.setVitalId(UUID.randomUUID().toString());
+        v.setPatientId(user.getId());
+        v.setNurseId(nurseId);
+        v.setTemperature(request.getTemperature());
+        v.setBloodPressure(request.getBloodPressure());
+        v.setPulse(request.getPulse());
+        v.setSpo2(request.getSpo2());
+        v.setDateTime(request.getDateTime() != null ? request.getDateTime() : LocalDateTime.now());
+        v.setNotes(request.getNotes());
+        v.setCreatedAt(LocalDateTime.now());
+        v.setUpdatedAt(LocalDateTime.now());
+
+        return vitalsRepository.save(v);
+    }
+
+    // List vitals by patient email
+    public List<Vitals> listVitalsByPatientEmail(String patientEmail) {
+        User user = userRepository.findByEmail(patientEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found for email: " + patientEmail));
+        return vitalsRepository.findByPatientIdOrderByDateTimeDesc(user.getId());
+    }
+
+    // Create a daily shift nurse note
+    public NurseNote createNurseNote(NurseNoteRequest request, String nurseId) {
+        User user = userRepository.findByEmail(request.getPatientEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found for email: " + request.getPatientEmail()));
+        if (!user.isActive() || !user.hasRole(User.Role.PATIENT)) {
+            throw new IllegalArgumentException("Provided email does not belong to an active patient");
+        }
+
+        NurseNote note = new NurseNote();
+        note.setPatientId(user.getId());
+        note.setNurseId(nurseId);
+        note.setNote(request.getNote());
+        note.setDate(request.getDate() != null ? request.getDate() : LocalDateTime.now());
+        note.setCreatedAt(LocalDateTime.now());
+        note.setUpdatedAt(LocalDateTime.now());
+        return nurseNoteRepository.save(note);
+    }
+
+    // List nurse notes by patient email with optional date range
+    public List<NurseNote> listNurseNotesByPatientEmail(String patientEmail, LocalDateTime from, LocalDateTime to) {
+        User user = userRepository.findByEmail(patientEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found for email: " + patientEmail));
+        if (from != null && to != null) {
+            return nurseNoteRepository.findByPatientIdAndDateBetweenOrderByDateDesc(user.getId(), from, to);
+        }
+        return nurseNoteRepository.findByPatientIdOrderByDateDesc(user.getId());
     }
 
     // List patients from users collection (role = PATIENT)
@@ -144,53 +210,45 @@ public class NurseService {
     // Validate medication administration
     public ValidationResult validateMedicationAdministration(MedicationAdministrationRequest request) {
         ValidationResult result = new ValidationResult();
-        
-        // Check if patient exists and is active
-        Optional<Patient> patient = patientRepository.findByPatientId(request.getPatientId());
-        if (patient.isEmpty() || !patient.get().isActive()) {
+
+        // Validate patient from users collection (patientId here is users.id)
+        Optional<User> userOpt = userRepository.findById(request.getPatientId());
+        if (userOpt.isEmpty() || !userOpt.get().isActive() || !userOpt.get().hasRole(User.Role.PATIENT)) {
             result.addError("Patient not found or inactive");
             return result;
         }
-        
-        // Check if prescription exists and is valid
-        Optional<Prescription> prescription = prescriptionRepository
-            .findValidPrescriptionForAdministration(request.getPatientId(), request.getMedicationId());
-        
+
+        // Resolve a valid prescription either by prescriptionId or by (patientId, medicationId)
+        Optional<Prescription> prescription = resolveValidPrescription(
+                request.getPatientId(), request.getMedicationId(), request.getPrescriptionId());
+
         if (prescription.isEmpty()) {
             result.addError("No valid prescription found for this medication");
             return result;
         }
-        
+
         // Validate dosage
-        if (!request.getAdministeredDosage().equals(prescription.get().getDosage())) {
+        if (request.getAdministeredDosage() == null || !request.getAdministeredDosage().equals(prescription.get().getDosage())) {
             result.addError("Administered dosage does not match prescribed dosage");
         }
-        
+
         // Validate dosage unit
-        if (!request.getDosageUnit().equals(prescription.get().getDosageUnit())) {
+        if (request.getDosageUnit() == null || !request.getDosageUnit().equals(prescription.get().getDosageUnit())) {
             result.addError("Dosage unit does not match prescription");
         }
-        
-        // Check for allergies
-        if (patient.get().getAllergies() != null) {
-            Optional<Medication> medication = medicationRepository.findById(request.getMedicationId());
-            if (medication.isPresent() && patient.get().getAllergies().contains(medication.get().getName())) {
-                result.addError("Patient has allergy to this medication");
-            }
-        }
-        
-        // Check timing constraints (basic implementation)
+
+        // Check timing constraints (basic implementation) using user patientId
         List<AdministrationRecord> recentAdministrations = administrationRecordRepository
             .findRecentAdministrationsForPatientAndMedication(
-                request.getPatientId(), 
-                request.getMedicationId(), 
+                request.getPatientId(),
+                (request.getMedicationId() != null ? request.getMedicationId() : prescription.get().getMedicationId()),
                 LocalDateTime.now().minusHours(1)
             );
-        
+
         if (!recentAdministrations.isEmpty()) {
             result.addWarning("Medication was administered recently. Please verify timing.");
         }
-        
+
         return result;
     }
     
@@ -202,12 +260,12 @@ public class NurseService {
             throw new IllegalArgumentException("Validation failed: " + String.join(", ", validation.getErrors()));
         }
         
-        // Get prescription and medication details
-        Prescription prescription = prescriptionRepository
-            .findValidPrescriptionForAdministration(request.getPatientId(), request.getMedicationId())
+        // Resolve prescription again (consistent with validation)
+        Prescription prescription = resolveValidPrescription(request.getPatientId(), request.getMedicationId(), request.getPrescriptionId())
             .orElseThrow(() -> new IllegalArgumentException("Valid prescription not found"));
-        
-        Medication medication = medicationRepository.findById(request.getMedicationId())
+
+        String medId = (request.getMedicationId() != null && !request.getMedicationId().isBlank() ? request.getMedicationId() : prescription.getMedicationId());
+        Medication medication = medicationRepository.findById(medId)
             .orElseThrow(() -> new IllegalArgumentException("Medication not found"));
         
         // Create administration record
@@ -215,8 +273,8 @@ public class NurseService {
         record.setRecordId(UUID.randomUUID().toString());
         record.setPatientId(request.getPatientId());
         record.setNurseId(nurseId);
-        record.setPrescriptionId(request.getPrescriptionId());
-        record.setMedicationId(request.getMedicationId());
+        record.setPrescriptionId(prescription.getPrescriptionId());
+        record.setMedicationId(medId);
         record.setMedicationName(medication.getName());
         record.setAdministeredDosage(request.getAdministeredDosage());
         record.setDosageUnit(request.getDosageUnit());
@@ -239,6 +297,65 @@ public class NurseService {
         }
         
         return AdministrationRecordResponse.fromAdministrationRecord(savedRecord);
+    }
+    
+    // Mark medication as missed (does not decrement prescription quantity)
+    public AdministrationRecordResponse markMedicationMissed(MedicationMissedRequest request, String nurseId) {
+        // Verify patient exists (in users collection) by id and is active
+        User user = userRepository.findById(request.getPatientId())
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        if (!user.isActive() || !user.hasRole(User.Role.PATIENT)) {
+            throw new IllegalArgumentException("Provided id does not belong to an active patient");
+        }
+
+        // Verify prescription exists and belongs to this patient & medication matches
+        Prescription prescription = prescriptionRepository.findByPrescriptionId(request.getPrescriptionId())
+                .orElseThrow(() -> new IllegalArgumentException("Prescription not found"));
+        String reqMedId = (request.getMedicationId() != null && !request.getMedicationId().isBlank() ? request.getMedicationId() : prescription.getMedicationId());
+        if (!prescription.getPatientId().equals(request.getPatientId()) ||
+            !prescription.getMedicationId().equals(reqMedId)) {
+            throw new IllegalArgumentException("Prescription does not match patient/medication");
+        }
+
+        // Create administration record with FAILED status
+        AdministrationRecord record = new AdministrationRecord();
+        record.setRecordId(UUID.randomUUID().toString());
+        record.setPatientId(request.getPatientId());
+        record.setNurseId(nurseId);
+        record.setPrescriptionId(request.getPrescriptionId());
+        record.setMedicationId(request.getMedicationId());
+        record.setMedicationName(prescription.getMedicationName());
+        record.setAdministeredDosage(0.0);
+        record.setDosageUnit(prescription.getDosageUnit());
+        record.setAdministrationTime(LocalDateTime.now());
+        record.setNotes(request.getNotes());
+        record.setStatus(AdministrationRecord.AdministrationStatus.FAILED);
+
+        AdministrationRecord saved = administrationRecordRepository.save(record);
+        return AdministrationRecordResponse.fromAdministrationRecord(saved);
+    }
+
+    // Helper to find one valid prescription without triggering non-unique Optional errors
+    private Optional<Prescription> resolveValidPrescription(String patientId, String medicationId, String prescriptionId) {
+        if (prescriptionId != null && !prescriptionId.isBlank()) {
+            return prescriptionRepository.findByPrescriptionId(prescriptionId)
+                    .filter(p -> p.getPatientId().equals(patientId))
+                    .filter(Prescription::isActive)
+                    .filter(p -> p.getRemainingQuantity() == null || p.getRemainingQuantity() > 0);
+        }
+
+        // Fallback: list active by (patientId, medicationId) and choose one with remaining qty
+        List<Prescription> candidates = prescriptionRepository
+                .findActivePrescriptionsForPatientAndMedication(patientId, medicationId);
+        return candidates.stream()
+                .filter(p -> p.getRemainingQuantity() == null || p.getRemainingQuantity() > 0)
+                // pick the most recently created/updated when available
+                .sorted((a, b) -> {
+                    var t1 = a.getUpdatedAt() != null ? a.getUpdatedAt() : a.getCreatedAt();
+                    var t2 = b.getUpdatedAt() != null ? b.getUpdatedAt() : b.getCreatedAt();
+                    return t2.compareTo(t1);
+                })
+                .findFirst();
     }
     
     // Get administration history for a patient
