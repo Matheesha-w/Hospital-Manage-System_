@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
@@ -22,5 +23,11 @@ public interface UserRepository extends MongoRepository<User, String> {
     
     Optional<User> findByEmailAndIsActiveTrue(String email);
 
-    List<User> findByRolesContaining(User.Role role);
+    // Find all users that contain a specific role
+    List<User> findByRolesContains(User.Role role);
+
+    // Simple contains searches for filtering
+    List<User> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+            String firstName, String lastName, String email);
+ 
 }
