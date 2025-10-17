@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface AppointmentRepository extends MongoRepository<Appointment, String> {
     List<Appointment> findByPatientIdOrderByAppointmentAtAsc(String patientId);
+    List<Appointment> findByDoctorIdOrderByAppointmentAtAsc(String doctorId);
     List<Appointment> findByDoctorIdAndAppointmentAtBetween(String doctorId, LocalDateTime start, LocalDateTime end);
     boolean existsByDoctorIdAndAppointmentAt(String doctorId, LocalDateTime appointmentAt);
 }

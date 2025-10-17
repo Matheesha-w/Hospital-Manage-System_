@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
-  Search, 
-  Users, 
-  Clock, 
-  AlertTriangle, 
-  CheckCircle, 
+  Users,
+  Search,
+  ClipboardList,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
   Heart
 } from 'lucide-react';
 // Change the path from "../../components/nurse/..." to "./" or just the filename
 import PatientSearch from "./PatientSearch";
 import NursePrescriptions from "./NursePrescriptions";
+import NurseMedicationAdmin from "./NurseMedicationAdmin";
+import NurseVitals from "./NurseVitals";
+import NurseWardBed from "./NurseWardBed";
+import NurseNotes from "./NurseNotes";
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -66,7 +71,11 @@ const NurseDashboard = () => {
 
   const tabs = [
     { id: 'search', label: 'Patient Search', icon: Search },
-    { id: 'prescriptions', label: 'Prescriptions', icon: CheckCircle }
+    { id: 'prescriptions', label: 'Prescriptions', icon: CheckCircle },
+    { id: 'meds', label: 'Medication Admin', icon: CheckCircle },
+    { id: 'vitals', label: 'Vitals', icon: Clock },
+    { id: 'notes', label: 'Notes', icon: ClipboardList },
+    { id: 'wardbed', label: 'Ward / Bed', icon: Users }
   ];
 
   return (
@@ -176,6 +185,22 @@ const NurseDashboard = () => {
 
             {activeTab === 'prescriptions' && (
               <NursePrescriptions />
+            )}
+
+            {activeTab === 'meds' && (
+              <NurseMedicationAdmin />
+            )}
+
+            {activeTab === 'vitals' && (
+              <NurseVitals />
+            )}
+
+            {activeTab === 'notes' && (
+              <NurseNotes />
+            )}
+
+            {activeTab === 'wardbed' && (
+              <NurseWardBed />
             )}
           </div>
         </div>

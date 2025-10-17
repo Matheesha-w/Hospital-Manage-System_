@@ -31,8 +31,10 @@ import LandingPage from './pages/LandingPage';
 import NurseAbout from './pages/nurse/NurseAbout';
 import NurseContact from './pages/nurse/NurseContact';
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
+import DoctorProfile from './pages/doctor/DoctorProfile';
 import SurgeryHistory from './pages/doctor/SurgeryHistory';
 import SurgeryAnalytics from './pages/doctor/SurgeryAnalytics';
+import DoctorAppointments from './pages/doctor/DoctorAppointments';
 import LabLayout from './pages/lab/Layout';
 import LabDashboard from './pages/lab/LabDashboard';
 import UploadReport from './pages/lab/UploadReport';
@@ -147,6 +149,16 @@ function AppContent() {
           <Route path="/doctor/dashboard" element={
             <ProtectedRoute requiredRoles={['DOCTOR']}>
               <DoctorDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/profile" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <DoctorProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/appointments" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <DoctorAppointments />
             </ProtectedRoute>
           } />
           {/* Lab Technician Routes */}
