@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { labService } from './services/labService';
-import axios from 'axios';
 
 const UploadReport = () => {
   const { token } = useAuth();
@@ -70,8 +69,8 @@ const UploadReport = () => {
       if (!token) return;
 
       try {
-        const response = await axios.get('/lab/reports/patients');
-        if (response.data.success) setPatients(response.data.data || []);
+        const response = await labService.listPatients();
+        if (response.success) setPatients(response.data || []);
       } catch (error) {
         console.error('Error loading patients:', error);
       }
