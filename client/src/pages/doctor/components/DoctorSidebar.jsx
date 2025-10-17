@@ -4,6 +4,8 @@ import { User, Stethoscope, Calendar, BarChart3, LogOut } from 'lucide-react';
 
 const navItems = [
   { to: '/doctor/dashboard', label: 'Dashboard', icon: Stethoscope },
+  { to: '/doctor/profile', label: 'Profile', icon: User },
+  { to: '/doctor/appointments', label: 'Appointments', icon: Calendar },
   { to: '/doctor/history', label: 'History', icon: Calendar },
   { to: '/doctor/analytics', label: 'Analytics', icon: BarChart3 },
 ];
