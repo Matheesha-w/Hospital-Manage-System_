@@ -6,8 +6,8 @@ import {
   PieChart, Pie, Cell, LineChart, Line, Area, AreaChart
 } from 'recharts';
 import { 
-  TrendingUp, TrendingDown, Calendar, Clock, Activity, 
-  AlertCircle, CheckCircle, Users, BarChart3 
+  TrendingUp, Clock, Activity, 
+  AlertCircle, CheckCircle, BarChart3 
 } from 'lucide-react';
 
 const COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
@@ -21,33 +21,30 @@ export default function SurgeryAnalytics() {
     weeklyTrends: [],
     completionRate: 0,
     averageCompletionTime: 0,
-    predictions: {
-      nextMonthCompleted: 0,
-      nextMonthPending: 0,
-      trendDirection: 'up'
-    }
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
+      setError('');
       const [countsRes, surgeriesRes] = await Promise.all([
         axios.get('/doctor/surgeries/counts'),
         axios.get('/doctor/surgeries')
       ]);
 
-      const counts = countsRes.data.data;
-      const surgeries = surgeriesRes.data.data || [];
+      const counts = countsRes?.data?.data || { completed: 0, pending: 0 };
+      const surgeries = Array.isArray(surgeriesRes?.data?.data) ? surgeriesRes.data.data : [];
 
       // Process data for charts
       const surgeriesByType = processSurgeriesByType(surgeries);
       const surgeriesByUrgency = processSurgeriesByUrgency(surgeries);
       const monthlyTrends = processMonthlyTrends(surgeries);
       const weeklyTrends = processWeeklyTrends(surgeries);
-      const completionRate = counts.completed / (counts.completed + counts.pending) * 100;
+      const total = (counts.completed || 0) + (counts.pending || 0);
+      const completionRate = total > 0 ? (counts.completed || 0) / total * 100 : 0;
       const averageCompletionTime = calculateAverageCompletionTime(surgeries);
-      const predictions = generatePredictions(monthlyTrends);
 
       setAnalyticsData({
         counts,
@@ -57,10 +54,10 @@ export default function SurgeryAnalytics() {
         weeklyTrends,
         completionRate: isNaN(completionRate) ? 0 : completionRate,
         averageCompletionTime,
-        predictions
       });
     } catch (error) {
       console.error('Error fetching analytics data:', error);
+      setError(error.response?.data?.message || 'Failed to load analytics data');
     } finally {
       setLoading(false);
     }
@@ -85,40 +82,48 @@ export default function SurgeryAnalytics() {
   const processMonthlyTrends = (surgeries) => {
     const monthlyData = {};
     surgeries.forEach(surgery => {
-      const month = new Date(surgery.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      if (!monthlyData[month]) {
-        monthlyData[month] = { month, completed: 0, pending: 0 };
+      const createdAt = surgery?.createdAt ? new Date(surgery.createdAt) : null;
+      if (!createdAt || isNaN(createdAt)) return;
+      const y = createdAt.getFullYear();
+      const m = createdAt.getMonth();
+      const key = y * 12 + m;
+      const label = createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      if (!monthlyData[key]) {
+        monthlyData[key] = { key, month: label, completed: 0, pending: 0 };
       }
       if (surgery.status === 'COMPLETED') {
-        monthlyData[month].completed++;
+        monthlyData[key].completed++;
       } else {
-        monthlyData[month].pending++;
+        monthlyData[key].pending++;
       }
     });
-    return Object.values(monthlyData).sort((a, b) => new Date(a.month) - new Date(b.month));
+    return Object.values(monthlyData).sort((a, b) => a.key - b.key).map(({ key, ...rest }) => rest);
   };
 
   const processWeeklyTrends = (surgeries) => {
     const weeklyData = {};
     surgeries.forEach(surgery => {
-      const week = getWeekLabel(new Date(surgery.createdAt));
-      if (!weeklyData[week]) {
-        weeklyData[week] = { week, count: 0 };
+      const createdAt = surgery?.createdAt ? new Date(surgery.createdAt) : null;
+      if (!createdAt || isNaN(createdAt)) return;
+      const { label, startMs } = getWeekInfo(createdAt);
+      if (!weeklyData[startMs]) {
+        weeklyData[startMs] = { week: label, startMs, count: 0 };
       }
-      weeklyData[week].count++;
+      weeklyData[startMs].count++;
     });
-    return Object.values(weeklyData).sort((a, b) => a.week.localeCompare(b.week));
+    return Object.values(weeklyData).sort((a, b) => a.startMs - b.startMs).map(({ startMs, ...rest }) => rest);
   };
 
-  const getWeekLabel = (date) => {
-    const startOfWeek = new Date(date);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day;
-    startOfWeek.setDate(diff);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    
-    return `${startOfWeek.getDate()}/${startOfWeek.getMonth() + 1} - ${endOfWeek.getDate()}/${endOfWeek.getMonth() + 1}`;
+  const getWeekInfo = (date) => {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = start.getDate() - day; // week starts on Sunday
+    start.setHours(0, 0, 0, 0);
+    start.setDate(diff);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const label = `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}`;
+    return { label, startMs: start.getTime() };
   };
 
   const calculateAverageCompletionTime = (surgeries) => {
@@ -134,23 +139,7 @@ export default function SurgeryAnalytics() {
     return Math.round(totalTime / completedSurgeries.length / (1000 * 60 * 60 * 24)); // days
   };
 
-  const generatePredictions = (monthlyTrends) => {
-    if (monthlyTrends.length < 2) {
-      return { nextMonthCompleted: 0, nextMonthPending: 0, trendDirection: 'stable' };
-    }
-
-    const recent = monthlyTrends.slice(-3);
-    const avgCompleted = recent.reduce((sum, item) => sum + item.completed, 0) / recent.length;
-    const avgPending = recent.reduce((sum, item) => sum + item.pending, 0) / recent.length;
-    
-    const trend = recent[recent.length - 1].completed > recent[0].completed ? 'up' : 'down';
-    
-    return {
-      nextMonthCompleted: Math.round(avgCompleted * 1.1), // 10% growth assumption
-      nextMonthPending: Math.round(avgPending),
-      trendDirection: trend
-    };
-  };
+  // Removed hardcoded prediction logic
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -172,12 +161,17 @@ export default function SurgeryAnalytics() {
   return (
     <div className="min-h-screen flex bg-gray-50">
       <DoctorSidebar />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-gray-200">
         <div className="max-w-7xl mx-auto p-6 space-y-6">
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-400 text-red-700 rounded p-4">
+              {error}
+            </div>
+          )}
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Surgery Analytics</h1>
+              <h1 className="text-2xl font-bold text-blue-600">Surgery Analytics</h1>
               <p className="text-gray-600">Comprehensive insights into your surgery performance</p>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -214,15 +208,8 @@ export default function SurgeryAnalytics() {
                   <TrendingUp className="h-6 w-6 text-green-600" />
                 </div>
               </div>
-              <div className="mt-4 flex items-center">
-                {analyticsData.predictions.trendDirection === 'up' ? (
-                  <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
-                )}
-                <span className={`text-sm ${analyticsData.predictions.trendDirection === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  Trend {analyticsData.predictions.trendDirection}
-                </span>
+              <div className="mt-4 text-sm text-gray-600">
+                Based on current completed vs pending surgeries
               </div>
             </div>
 
@@ -328,39 +315,7 @@ export default function SurgeryAnalytics() {
               </ResponsiveContainer>
             </div>
 
-            {/* Predictions */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Month Predictions</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                  <div className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                    <span className="font-medium text-green-900">Expected Completed</span>
-                  </div>
-                  <span className="text-2xl font-bold text-green-600">{analyticsData.predictions.nextMonthCompleted}</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
-                  <div className="flex items-center">
-                    <Clock className="h-5 w-5 text-orange-600 mr-2" />
-                    <span className="font-medium text-orange-900">Expected Pending</span>
-                  </div>
-                  <span className="text-2xl font-bold text-orange-600">{analyticsData.predictions.nextMonthPending}</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-center">
-                    {analyticsData.predictions.trendDirection === 'up' ? (
-                      <TrendingUp className="h-5 w-5 text-blue-600 mr-2" />
-                    ) : (
-                      <TrendingDown className="h-5 w-5 text-blue-600 mr-2" />
-                    )}
-                    <span className="font-medium text-blue-900">Performance Trend</span>
-                  </div>
-                  <span className={`text-lg font-semibold ${analyticsData.predictions.trendDirection === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                    {analyticsData.predictions.trendDirection === 'up' ? 'Improving' : 'Declining'}
-                  </span>
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           {/* Insights */}

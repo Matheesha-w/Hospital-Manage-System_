@@ -20,8 +20,8 @@ export default function DoctorSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 shadow-sm">
-      <div className="p-4">
+    <aside className="w-64 bg-white border-r border-gray-200 shadow-sm sticky top-0 h-screen flex flex-col">
+      <div className="p-4 flex-1 flex flex-col">
         {/* User Profile Section */}
         <div className="flex items-center gap-3 mb-6 p-3 bg-blue-50 rounded-lg">
           <span className="p-2 bg-blue-100 rounded-full">
@@ -37,27 +37,28 @@ export default function DoctorSidebar() {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="space-y-1">
-          {navItems.map(item => {
-            const Icon = item.icon;
-            const isActive = pathname === item.to;
-            
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <Icon className="h-5 w-5 flex-shrink-0" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-          
+        <nav className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col">
+            {navItems.map(item => {
+              const Icon = item.icon;
+              const isActive = pathname === item.to;
+              
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`flex flex-1 items-center gap-3 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
           {/* Logout Button */}
           <button
             onClick={handleLogout}
