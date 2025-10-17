@@ -175,5 +175,14 @@ public class AuthService {
         User saved = userRepository.save(user);
         return new ApiResponse(true, "Profile updated successfully", saved);
     }
+
+    public User getCurrentUserEntity() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return userRepository.findById(userPrincipal.getId()).orElse(null);
+    }
 }
 

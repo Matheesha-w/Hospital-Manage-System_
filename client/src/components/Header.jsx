@@ -28,10 +28,10 @@ export default function Header() {
           {isNurse ? (
             <>
               <Heart className="h-6 w-6 text-pink-500" />
-              <span>HMS - Nurse Portal</span>
+              <span>HealthCare Portal - Nurse Portal</span>
             </>
           ) : (
-            <span>HMS</span>
+            <span>HealthCare Portal</span>
           )}
         </Link>
         
