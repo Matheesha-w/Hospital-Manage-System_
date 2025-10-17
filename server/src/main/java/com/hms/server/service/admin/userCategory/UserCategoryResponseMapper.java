@@ -4,9 +4,8 @@ import com.hms.server.dto.admin.userCategory.UserCategoryResponse;
 
 public class UserCategoryResponseMapper {
     public static UserCategoryResponse toResponse(Object userEntity) {
-        // Map userEntity to UserCategoryResponse (implement as needed)
+        // Map userEntity to UserCategoryResponse
         UserCategoryResponse resp = new UserCategoryResponse();
-        // Example: resp.setId(userEntity.getId());
         // Map other fields accordingly
         return resp;
     }
