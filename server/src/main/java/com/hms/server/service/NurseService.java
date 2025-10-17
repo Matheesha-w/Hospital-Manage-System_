@@ -35,6 +35,68 @@ public class NurseService {
     @Autowired
     private UserRepository userRepository;
     
+    // Create a prescription by patient email (nurse flow)
+    public PrescriptionResponse createPrescriptionByPatientEmail(NurseCreatePrescriptionRequest req, String nurseId) {
+        User user = userRepository.findByEmail(req.getPatientEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found for email: " + req.getPatientEmail()));
+        if (!user.isActive() || !user.hasRole(User.Role.PATIENT)) {
+            throw new IllegalArgumentException("Provided email does not belong to an active patient");
+        }
+
+        Prescription p = new Prescription();
+        p.setId(null);
+        p.setPrescriptionId(UUID.randomUUID().toString());
+        p.setPatientId(user.getId());
+        // Use nurseId as prescriber id in this flow
+        p.setDoctorId(nurseId);
+        p.setMedicationId(req.getMedicationId());
+        p.setMedicationName(req.getMedicationName());
+        p.setDosage(req.getDosage());
+        p.setDosageUnit(req.getDosageUnit());
+        p.setFrequency(req.getFrequency());
+        p.setStartDate(req.getStartDate());
+        p.setEndDate(req.getEndDate());
+        p.setTotalQuantity(req.getTotalQuantity());
+        p.setRemainingQuantity(req.getTotalQuantity());
+        p.setInstructions(req.getInstructions());
+        p.setNotes(req.getNotes());
+        p.setStatus(Prescription.PrescriptionStatus.ACTIVE);
+        p.setCreatedAt(LocalDateTime.now());
+        p.setUpdatedAt(LocalDateTime.now());
+
+        Prescription saved = prescriptionRepository.save(p);
+        return PrescriptionResponse.fromPrescription(saved);
+    }
+
+    // List prescriptions by patient email
+    public List<PrescriptionResponse> listPrescriptionsByPatientEmail(String patientEmail) {
+        User user = userRepository.findByEmail(patientEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found for email: " + patientEmail));
+        List<Prescription> list = prescriptionRepository.findByPatientId(user.getId());
+        return list.stream().map(PrescriptionResponse::fromPrescription).collect(Collectors.toList());
+    }
+
+    // List patients from users collection (role = PATIENT)
+    public List<NursePatientListItem> listPatientUsers(String query) {
+        List<User> users = userRepository.findByRolesContains(User.Role.PATIENT);
+        if (query != null && !query.isBlank()) {
+            final String q = query.toLowerCase();
+            users = users.stream()
+                    .filter(u ->
+                            (u.getFirstName() != null && u.getFirstName().toLowerCase().contains(q)) ||
+                            (u.getLastName() != null && u.getLastName().toLowerCase().contains(q)) ||
+                            (u.getEmail() != null && u.getEmail().toLowerCase().contains(q)) ||
+                            (u.getUsername() != null && u.getUsername().toLowerCase().contains(q)) ||
+                            (u.getPhoneNumber() != null && u.getPhoneNumber().toLowerCase().contains(q))
+                    )
+                    .collect(Collectors.toList());
+        }
+        return users.stream()
+                .filter(User::isActive)
+                .map(NursePatientListItem::fromUser)
+                .collect(Collectors.toList());
+    }
+    
     // Patient search functionality
     public List<PatientResponse> searchPatients(PatientSearchRequest request) {
         List<Patient> patients;
