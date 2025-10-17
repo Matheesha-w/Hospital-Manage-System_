@@ -33,9 +33,11 @@ public class AdminUserController {
         } catch (IllegalArgumentException ex) {
             log.warn("Invalid role provided: {}", roleStr);
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Invalid role specified"));
+            // Returns bad request if invalid role is provided
         } catch (Exception ex) {
             log.error("Failed to retrieve users for role {}", roleStr, ex);
             return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to retrieve users"));
+            // Returns internal server error if any other exception occurs
         }
     }
 
@@ -47,9 +49,11 @@ public class AdminUserController {
         } catch (IllegalArgumentException ex) {
             log.warn("Invalid user data supplied for creation", ex);
             return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+            // Returns bad request if invalid user data is supplied
         } catch (Exception ex) {
             log.error("Failed to create user", ex);
             return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to create user"));
+            // Returns internal server error if any other exception occurs
         }
     }
 
@@ -61,9 +65,11 @@ public class AdminUserController {
         } catch (IllegalArgumentException ex) {
             log.warn("Invalid update for user {}", userId, ex);
             return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+            // Returns bad request if invalid update data is supplied
         } catch (Exception ex) {
             log.error("Failed to update user {}", userId, ex);
             return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to update user"));
+            // Returns internal server error if any other exception occurs
         }
     }
 
@@ -75,9 +81,11 @@ public class AdminUserController {
         } catch (IllegalArgumentException ex) {
             log.warn("Invalid delete request for user {}", userId, ex);
             return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+            // Returns bad request if invalid delete request is supplied
         } catch (Exception ex) {
             log.error("Failed to delete user {}", userId, ex);
             return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to delete user"));
+            // Returns internal server error if any other exception occurs
         }
     }
 }
