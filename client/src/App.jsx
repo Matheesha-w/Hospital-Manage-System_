@@ -40,6 +40,7 @@ import LabDashboard from './pages/lab/LabDashboard';
 import UploadReport from './pages/lab/UploadReport';
 import PendingReports from './pages/lab/PendingReports';
 import CompletedReports from './pages/lab/CompletedReports';
+import PharmacyReports from './pages/pharmacist/PharmacyReports';
 
 
 function AppContent() {
@@ -132,9 +133,7 @@ function AppContent() {
           } />
           <Route path="/pharmacist/reports" element={
             <ProtectedRoute requiredRoles={['PHARMACIST']}>
-              <div className="min-h-screen flex items-center justify-center">
-                <h1 className="text-2xl font-bold">Reports Page - Coming Soon</h1>
-              </div>
+              <PharmacyReports />
             </ProtectedRoute>
           } />
           <Route path="/pharmacist/settings" element={

@@ -7,6 +7,9 @@ const AddEditDrug = () => {
   const { id } = useParams(); // Get drug ID from URL if editing
   const isEditMode = !!id;
 
+  // API base URL configuration
+  const API_BASE_URL = 'http://localhost:8084/api/pharmacy';
+
   const [loading, setLoading] = useState(false);
   const [fetchingDrug, setFetchingDrug] = useState(isEditMode);
   const [formData, setFormData] = useState({
@@ -29,7 +32,7 @@ const AddEditDrug = () => {
   const fetchDrug = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/pharmacy/inventory/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -110,8 +113,8 @@ const AddEditDrug = () => {
     try {
       const token = localStorage.getItem('token');
       const url = isEditMode
-        ? `http://localhost:8080/api/pharmacy/inventory/${id}`
-        : 'http://localhost:8080/api/pharmacy/inventory';
+        ? `${API_BASE_URL}/inventory/${id}`
+        : `${API_BASE_URL}/inventory`;
       
       const method = isEditMode ? 'PUT' : 'POST';
 

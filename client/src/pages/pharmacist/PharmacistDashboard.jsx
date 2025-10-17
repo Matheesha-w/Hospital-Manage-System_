@@ -5,7 +5,6 @@ import {
   Package,
   FileText,
   BarChart3,
-  Settings,
   Bell,
   User,
   Plus,
@@ -19,6 +18,9 @@ const PharmacistDashboard = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // API base URL configuration
+  const API_BASE_URL = 'http://localhost:8084/api/pharmacy';
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -28,7 +30,7 @@ const PharmacistDashboard = () => {
       const token = localStorage.getItem('token');
       
       // Fetch inventory
-      const inventoryRes = await fetch('http://localhost:8080/api/pharmacy/inventory', {
+      const inventoryRes = await fetch(`${API_BASE_URL}/inventory`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -36,7 +38,7 @@ const PharmacistDashboard = () => {
       const inventoryData = await inventoryRes.json();
       
       // Fetch prescriptions
-      const prescriptionsRes = await fetch('http://localhost:8080/api/pharmacy/prescriptions/status/PENDING', {
+      const prescriptionsRes = await fetch(`${API_BASE_URL}/prescriptions/status/PENDING`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -79,13 +81,6 @@ const PharmacistDashboard = () => {
       color: 'bg-purple-500',
       hoverColor: 'hover:bg-purple-600',
       path: '/pharmacist/reports'
-    },
-    {
-      title: 'Settings',
-      icon: Settings,
-      color: 'bg-gray-500',
-      hoverColor: 'hover:bg-gray-600',
-      path: '/pharmacist/settings'
     }
   ];
 
@@ -157,7 +152,7 @@ const PharmacistDashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {navigationCards.map((card, index) => (
             <button
               key={index}
