@@ -89,7 +89,6 @@ A comprehensive Hospital Management System built with React + Vite + Tailwind CS
 The system automatically creates an admin account on first startup:
 
 - **Username**: `admin`
-- **Password**: `admin123`
 - **Email**: `admin@hms.com`
 
 **⚠️ Important**: Change the admin password in production!
