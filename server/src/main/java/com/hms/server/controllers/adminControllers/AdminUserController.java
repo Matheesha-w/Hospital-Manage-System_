@@ -26,6 +26,7 @@ public class AdminUserController {
     @GetMapping("/{role}")
     public ResponseEntity<ApiResponse> listByRole(@PathVariable("role") String roleStr) {
         try {
+            // Normalize the label so mixed case values still resolve to a role
             User.Role role = User.Role.valueOf(roleStr.toUpperCase());
             List<AdminUserResponse> users = adminUserService.listUsersByRole(role);
             return ResponseEntity.ok(new ApiResponse(true, "Users retrieved", users));

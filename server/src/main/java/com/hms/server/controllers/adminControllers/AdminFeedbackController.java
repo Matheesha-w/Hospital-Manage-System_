@@ -19,6 +19,7 @@ public class AdminFeedbackController {
     @GetMapping("/pending")
     public ResponseEntity<List<FeedbackResponse>> getPendingFeedbacks() {
         try {
+            // Surfaces only the submissions still awaiting moderation
             return ResponseEntity.ok(feedbackService.getAllFeedbacks(false));
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().build();
