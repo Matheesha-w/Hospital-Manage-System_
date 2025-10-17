@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
-  Search, 
-  Users, 
-  Pill, 
-  Clock, 
-  AlertTriangle, 
-  CheckCircle, 
-  Plus,
-  History,
-  User,
+  Users,
+  Search,
+  ClipboardList,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
   Heart
 } from 'lucide-react';
 // Change the path from "../../components/nurse/..." to "./" or just the filename
 import PatientSearch from "./PatientSearch";
-import MedicationAdministration from "./MedicationAdministration";
-import AdministrationHistory from "./AdministrationHistory";
-import PatientDetails from './PatientDetails'; // Assuming this component was also in the nurse folder
+import NursePrescriptions from "./NursePrescriptions";
+import NurseMedicationAdmin from "./NurseMedicationAdmin";
+import NurseVitals from "./NurseVitals";
+import NurseWardBed from "./NurseWardBed";
+import NurseNotes from "./NurseNotes";
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -67,21 +66,16 @@ const NurseDashboard = () => {
 
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
-    setActiveTab('patient-details');
-    toast.success(`Selected patient: ${patient.fullName}`);
-  };
-
-  const handleMedicationAdministered = () => {
-    setActiveTab('history');
-    loadDashboardStats(); // Refresh stats
-    toast.success('Medication administered successfully');
+    toast.success(`Selected patient: ${patient.firstName ? patient.firstName + ' ' + (patient.lastName || '') : (patient.username || patient.email)}`);
   };
 
   const tabs = [
     { id: 'search', label: 'Patient Search', icon: Search },
-    { id: 'patient-details', label: 'Patient Details', icon: User, disabled: !selectedPatient },
-    { id: 'medication', label: 'Administer Medication', icon: Pill, disabled: !selectedPatient },
-    { id: 'history', label: 'Administration History', icon: History }
+    { id: 'prescriptions', label: 'Prescriptions', icon: CheckCircle },
+    { id: 'meds', label: 'Medication Admin', icon: CheckCircle },
+    { id: 'vitals', label: 'Vitals', icon: Clock },
+    { id: 'notes', label: 'Notes', icon: ClipboardList },
+    { id: 'wardbed', label: 'Ward / Bed', icon: Users }
   ];
 
   return (
@@ -189,26 +183,24 @@ const NurseDashboard = () => {
               <PatientSearch onPatientSelect={handlePatientSelect} />
             )}
 
-            {activeTab === 'patient-details' && selectedPatient && (
-              <PatientDetails 
-                patient={selectedPatient} 
-                onAdministerMedication={() => setActiveTab('medication')}
-              />
+            {activeTab === 'prescriptions' && (
+              <NursePrescriptions />
             )}
 
-            {activeTab === 'medication' && selectedPatient && (
-              <MedicationAdministration 
-                patient={selectedPatient}
-                onMedicationAdministered={handleMedicationAdministered}
-                onBack={() => setActiveTab('patient-details')}
-              />
+            {activeTab === 'meds' && (
+              <NurseMedicationAdmin />
             )}
 
-            {activeTab === 'history' && (
-              <AdministrationHistory 
-                patientId={selectedPatient?.patientId}
-                nurseId={user?.id}
-              />
+            {activeTab === 'vitals' && (
+              <NurseVitals />
+            )}
+
+            {activeTab === 'notes' && (
+              <NurseNotes />
+            )}
+
+            {activeTab === 'wardbed' && (
+              <NurseWardBed />
             )}
           </div>
         </div>

@@ -19,6 +19,7 @@ public class ContactMessage {
     private String email;
     private String subject;
     private String message;
+    private String patientId;
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private boolean responded = false;

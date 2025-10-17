@@ -10,12 +10,19 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/nurse")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(
+    origins = "http://localhost:5173",
+    allowedHeaders = "*",
+    methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS },
+    allowCredentials = "true"
+)
 public class NurseController {
     
     @Autowired
@@ -31,6 +38,109 @@ public class NurseController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, "Failed to search patients: " + e.getMessage()));
+        }
+    }
+
+    // List patients from users collection (role = PATIENT)
+    @GetMapping("/patients/users")
+    public ResponseEntity<ApiResponse> listPatientUsers(@RequestParam(value = "q", required = false) String q) {
+        try {
+            List<NursePatientListItem> patients = nurseService.listPatientUsers(q);
+            return ResponseEntity.ok(new ApiResponse(true, "Patients (users) retrieved successfully", patients));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Failed to list patient users: " + e.getMessage()));
+        }
+    }
+
+    // Create prescription by patient email (nurse)
+    @PostMapping("/prescriptions")
+    public ResponseEntity<ApiResponse> createPrescription(
+            @Valid @RequestBody NurseCreatePrescriptionRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        try {
+            String nurseId = userPrincipal.getId();
+            PrescriptionResponse created = nurseService.createPrescriptionByPatientEmail(request, nurseId);
+            return ResponseEntity.ok(new ApiResponse(true, "Prescription created", created));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Failed to create prescription: " + e.getMessage()));
+        }
+    }
+
+    // List prescriptions by patient email
+    @GetMapping("/prescriptions")
+    public ResponseEntity<ApiResponse> listPrescriptionsByEmail(@RequestParam("patientEmail") String patientEmail) {
+        try {
+            List<PrescriptionResponse> list = nurseService.listPrescriptionsByPatientEmail(patientEmail);
+            return ResponseEntity.ok(new ApiResponse(true, "Prescriptions retrieved", list));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Failed to fetch prescriptions: " + e.getMessage()));
+        }
+    }
+
+    // Record patient vitals by patient email
+    @PostMapping("/vitals")
+    public ResponseEntity<ApiResponse> recordVitals(
+            @Valid @RequestBody VitalsRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        try {
+            String nurseId = userPrincipal.getId();
+            var saved = nurseService.recordVitals(request, nurseId);
+            return ResponseEntity.ok(new ApiResponse(true, "Vitals recorded", saved));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Failed to record vitals: " + e.getMessage()));
+        }
+    }
+
+    // List patient vitals by patient email
+    @GetMapping("/vitals")
+    public ResponseEntity<ApiResponse> listVitalsByEmail(@RequestParam("patientEmail") String patientEmail) {
+        try {
+            var list = nurseService.listVitalsByPatientEmail(patientEmail);
+            return ResponseEntity.ok(new ApiResponse(true, "Vitals retrieved", list));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Failed to fetch vitals: " + e.getMessage()));
+        }
+    }
+
+    // Create nurse daily shift note
+    @PostMapping("/notes")
+    public ResponseEntity<ApiResponse> createNurseNote(
+            @Valid @RequestBody NurseNoteRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        try {
+            String nurseId = userPrincipal.getId();
+            var saved = nurseService.createNurseNote(request, nurseId);
+            return ResponseEntity.ok(new ApiResponse(true, "Nurse note created", saved));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Failed to create nurse note: " + e.getMessage()));
+        }
+    }
+
+    // List nurse notes by patient email with optional date range
+    @GetMapping("/notes")
+    public ResponseEntity<ApiResponse> listNurseNotes(
+            @RequestParam("patientEmail") String patientEmail,
+            @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to
+    ) {
+        try {
+            var list = nurseService.listNurseNotesByPatientEmail(patientEmail, from, to);
+            return ResponseEntity.ok(new ApiResponse(true, "Nurse notes retrieved", list));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Failed to fetch nurse notes: " + e.getMessage()));
         }
     }
     
@@ -88,6 +198,24 @@ public class NurseController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, "Failed to administer medication: " + e.getMessage()));
+        }
+    }
+    
+    // Mark medication as missed
+    @PostMapping("/medications/miss")
+    public ResponseEntity<ApiResponse> markMedicationMissed(
+            @Valid @RequestBody MedicationMissedRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        try {
+            String nurseId = userPrincipal.getId();
+            AdministrationRecordResponse record = nurseService.markMedicationMissed(request, nurseId);
+            return ResponseEntity.ok(new ApiResponse(true, "Medication marked as missed", record));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, "Failed to mark medication as missed: " + e.getMessage()));
         }
     }
     
