@@ -4,6 +4,7 @@ import com.hms.server.dto.ApiResponse;
 import com.hms.server.dto.ContactMessageRequest;
 import com.hms.server.dto.ContactResponseRequest;
 import com.hms.server.models.adminModels.ContactMessage;
+import com.hms.server.model.User;
 import com.hms.server.repository.ContactMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ContactService {
     private final ContactMessageRepository repository;
+    private final AuthService authService;
 
     public ApiResponse createMessage(ContactMessageRequest req) {
         ContactMessage msg = new ContactMessage();
@@ -22,6 +24,10 @@ public class ContactService {
         msg.setEmail(req.getEmail());
         msg.setSubject(req.getSubject());
         msg.setMessage(req.getMessage());
+        User current = authService.getCurrentUserEntity();
+        if (current != null && current.getRoles().contains(User.Role.PATIENT)) {
+            msg.setPatientId(current.getId());
+        }
         ContactMessage saved = repository.save(msg);
         return new ApiResponse(true, "Message received", saved);
     }
@@ -39,6 +45,15 @@ public class ContactService {
         repository.save(msg);
         // Email sending would go here
         return new ApiResponse(true, "Response recorded");
+    }
+
+    public ApiResponse listMessagesForCurrentPatient() {
+        User current = authService.getCurrentUserEntity();
+        if (current == null || !current.getRoles().contains(User.Role.PATIENT)) {
+            return new ApiResponse(false, "Not authorized to view messages");
+        }
+        List<ContactMessage> messages = repository.findByPatientIdOrderByCreatedAtDesc(current.getId());
+        return new ApiResponse(true, "Messages retrieved", messages);
     }
 }
 

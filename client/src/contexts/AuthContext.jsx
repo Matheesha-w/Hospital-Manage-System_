@@ -19,6 +19,20 @@ const apiNoAuth = axios.create({ baseURL: API_BASE_URL, withCredentials: false }
 // Ensure no Authorization header
 delete apiNoAuth.defaults.headers.common['Authorization'];
 
+// Always attach Authorization from localStorage if available
+axios.interceptors.request.use((config) => {
+  try {
+    if (!config.headers) config.headers = {};
+    if (!config.headers['Authorization']) {
+      const t = localStorage.getItem('token');
+      if (t) config.headers['Authorization'] = `Bearer ${t}`;
+    }
+  } catch {}
+  return config;
+});
+
+// Note: do not clear token globally on 401 to avoid cascading logout during transient backend issues
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
