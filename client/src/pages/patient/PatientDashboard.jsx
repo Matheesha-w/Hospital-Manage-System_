@@ -194,7 +194,7 @@ const PatientDashboard = () => {
 			</div>
 
 			{/* Profile Card */}
-			<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12">
+			<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
 				<div className="bg-white/95 backdrop-blur rounded-xl shadow-xl border border-slate-100 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-6">
 					<div className="shrink-0">
 						<div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-sky-50 grid place-items-center ring-2 ring-sky-100">
