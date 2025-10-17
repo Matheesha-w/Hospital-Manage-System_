@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -28,8 +28,24 @@ import About from './pages/About';
 import News from './pages/News';
 import LandingPage from './pages/LandingPage';
 
+import NurseAbout from './pages/nurse/NurseAbout';
+import NurseContact from './pages/nurse/NurseContact';
+import DoctorDashboard from './pages/doctor/DoctorDashboard';
+import DoctorProfile from './pages/doctor/DoctorProfile';
+import SurgeryHistory from './pages/doctor/SurgeryHistory';
+import SurgeryAnalytics from './pages/doctor/SurgeryAnalytics';
+import DoctorAppointments from './pages/doctor/DoctorAppointments';
+import LabLayout from './pages/lab/Layout';
+import LabDashboard from './pages/lab/LabDashboard';
+import UploadReport from './pages/lab/UploadReport';
+import PendingReports from './pages/lab/PendingReports';
+import CompletedReports from './pages/lab/CompletedReports';
+
+
 function AppContent() {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  const isLabRoute = location.pathname.startsWith('/lab');
 
   if (loading) {
     return (
@@ -40,15 +56,16 @@ function AppContent() {
   }
 
   return (
-    <Router>
-      <div className="App">
-        <Toaster position="top-right" />
-        <Header />
-        <Routes>
+    <div className="App">
+      <Toaster position="top-right" />
+      {!isLabRoute && <Header />}
+      <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/news" element={<News />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/nurse/about" element={<NurseAbout />} />
+          <Route path="/nurse/contact" element={<NurseContact />} />
           <Route 
             path="/login" 
             element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
@@ -127,16 +144,73 @@ function AppContent() {
               </div>
             </ProtectedRoute>
           } />
-        </Routes>
-      </div>
-    </Router>
+
+          {/* Doctor Routes */}
+          <Route path="/doctor/dashboard" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/profile" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <DoctorProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/appointments" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <DoctorAppointments />
+            </ProtectedRoute>
+          } />
+          {/* Lab Technician Routes */}
+          <Route path="/lab" element={
+            <ProtectedRoute requiredRoles={['LAB_TECHNICIAN']}>
+              <LabLayout>
+                <LabDashboard />
+              </LabLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/lab/upload" element={
+            <ProtectedRoute requiredRoles={['LAB_TECHNICIAN']}>
+              <LabLayout>
+                <UploadReport />
+              </LabLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/lab/pending" element={
+            <ProtectedRoute requiredRoles={['LAB_TECHNICIAN']}>
+              <LabLayout>
+                <PendingReports />
+              </LabLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/lab/completed" element={
+            <ProtectedRoute requiredRoles={['LAB_TECHNICIAN']}>
+              <LabLayout>
+                <CompletedReports />
+              </LabLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/history" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <SurgeryHistory />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/analytics" element={
+            <ProtectedRoute requiredRoles={['DOCTOR']}>
+              <SurgeryAnalytics />
+            </ProtectedRoute>
+          } />
+      </Routes>
+    </div>
   );
 }
 
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <Router>
+        <AppContent />
+      </Router>
     </AuthProvider>
   );
 }

@@ -3,6 +3,7 @@ package com.hms.server.controllers.doctor;
 import com.hms.server.dto.ApiResponse;
 import com.hms.server.dto.doctor.SurgeryDtos;
 import com.hms.server.service.doctor.SurgeryService;
+import com.hms.server.service.doctor.DoctorPatientLookupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 public class DoctorSurgeryController {
 
     private final SurgeryService surgeryService;
+    private final DoctorPatientLookupService doctorPatientLookupService;
 
     @PostMapping
     public ResponseEntity<ApiResponse> create(@Valid @RequestBody SurgeryDtos.CreateRequest request) {
@@ -35,6 +37,12 @@ public class DoctorSurgeryController {
     public ResponseEntity<ApiResponse> getCounts() {
         var counts = surgeryService.getCountsForCurrentDoctor();
         return ResponseEntity.ok(new ApiResponse(true, "Counts fetched", counts));
+    }
+
+    @GetMapping("/completed")
+    public ResponseEntity<ApiResponse> getCompletedSurgeries() {
+        List<SurgeryDtos.ResponseItem> completedSurgeries = surgeryService.getCompletedSurgeriesForCurrentDoctor();
+        return ResponseEntity.ok(new ApiResponse(true, "Completed surgeries fetched", completedSurgeries));
     }
 
     @PutMapping
@@ -57,7 +65,7 @@ public class DoctorSurgeryController {
 
     @GetMapping("/patients")
     public ResponseEntity<ApiResponse> searchPatients(@RequestParam(name = "q", required = false) String q) {
-        var results = surgeryService.searchPatientsByName(q);
+        var results = doctorPatientLookupService.searchPatientsByName(q);
         return ResponseEntity.ok(new ApiResponse(true, "Patients fetched", results));
     }
 

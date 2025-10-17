@@ -44,4 +44,10 @@ public class AuthController {
         ApiResponse response = authService.getCurrentUser();
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse> updateCurrentUser(@Valid @RequestBody UpdateMeRequest request) {
+        ApiResponse response = authService.updateCurrentUser(request);
+        return ResponseEntity.ok(response);
+    }
 }

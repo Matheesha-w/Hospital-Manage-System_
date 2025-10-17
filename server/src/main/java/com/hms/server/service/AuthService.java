@@ -153,5 +153,36 @@ public class AuthService {
 
         return new ApiResponse(true, "User details retrieved successfully", user);
     }
+
+    public ApiResponse updateCurrentUser(UpdateMeRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ApiResponse(false, "User not authenticated");
+        }
+
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (req.getUsername() != null) user.setUsername(req.getUsername());
+        if (req.getEmail() != null) user.setEmail(req.getEmail());
+        if (req.getFirstName() != null) user.setFirstName(req.getFirstName());
+        if (req.getLastName() != null) user.setLastName(req.getLastName());
+        if (req.getPhoneNumber() != null) user.setPhoneNumber(req.getPhoneNumber());
+        if (req.getAddress() != null) user.setAddress(req.getAddress());
+        if (req.getDateOfBirth() != null) user.setDateOfBirth(req.getDateOfBirth());
+
+        User saved = userRepository.save(user);
+        return new ApiResponse(true, "Profile updated successfully", saved);
+    }
+
+    public User getCurrentUserEntity() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return userRepository.findById(userPrincipal.getId()).orElse(null);
+    }
 }
 

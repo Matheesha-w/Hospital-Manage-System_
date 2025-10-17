@@ -7,6 +7,8 @@ import AdminDashboard from '../admin/AdminDashboard'; // admin dashboard
 import PatientDashboard from '../patient/PatientDashboard'; // patient dashboard
 import PharmacistDashboard from '../pharmacist/PharmacistDashboard'; // pharmacist dashboard
 import DoctorDashboard from '../doctor/DoctorDashboard';
+import NurseDashboard from '../nurse/NurseDashboard';
+import LabDashboard from '../lab/LabDashboard';
 
 
 const Dashboard = () => {
@@ -17,8 +19,8 @@ const Dashboard = () => {
   if (hasRole('ADMIN')) return <AdminDashboard />;
   if (hasRole('PHARMACIST')) return <PharmacistDashboard />;
   if (hasRole('DOCTOR')) return <DoctorDashboard />;
-  if (hasRole('NURSE')) return <><h1>Set your dashboard here</h1></>;
-  if (hasRole('LAB_TECHNICIAN')) return <><h1>Set your dashboard here</h1></>;
+  if (hasRole('NURSE')) return <NurseDashboard/>;
+  if (hasRole('LAB_TECHNICIAN')) return <LabDashboard/>;
   if (hasRole('PATIENT')) return <PatientDashboard />;
 
 

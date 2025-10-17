@@ -1,10 +1,9 @@
-import React, { useState } from "react";
-import { FaUserCircle, FaEdit, FaComments } from "react-icons/fa";
+import React, { useState, useEffect, useCallback } from "react";
+import { FaUserCircle, FaEdit, FaComments, FaClock, FaCheckCircle, FaProcedures, FaHospital, FaCalendarPlus } from "react-icons/fa";
 import Feedback from "./Feedback";
 import EditProfile from "./EditProfile";
-
-import { useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import axios from "axios";
 
 const PatientDashboard = () => {
 	const { token } = useAuth();
@@ -13,6 +12,23 @@ const PatientDashboard = () => {
 	const [showFeedback, setShowFeedback] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+	const [doctorList, setDoctorList] = useState([]);
+	const [doctorLoading, setDoctorLoading] = useState(false);
+	const [doctorError, setDoctorError] = useState("");
+	const [appointments, setAppointments] = useState([]);
+	const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+	const [appointmentsError, setAppointmentsError] = useState("");
+	const [appointmentForm, setAppointmentForm] = useState({ doctorId: "", appointmentAt: "", reason: "" });
+	const [createLoading, setCreateLoading] = useState(false);
+	const [createError, setCreateError] = useState("");
+	const [createSuccess, setCreateSuccess] = useState("");
+
+	// Surgeries state
+	const [upcomingSurgeries, setUpcomingSurgeries] = useState([]);
+	const [completedSurgeries, setCompletedSurgeries] = useState([]);
+	const [surgeriesLoading, setSurgeriesLoading] = useState(false);
+	const [surgeriesError, setSurgeriesError] = useState("");
+	const [activeSurgeryTab, setActiveSurgeryTab] = useState("pending");
 
 	useEffect(() => {
 		let active = true;
@@ -37,6 +53,102 @@ const PatientDashboard = () => {
 			}
 		};
 		loadMe();
+		return () => {
+			active = false;
+		};
+	}, [token]);
+
+	const loadDoctors = useCallback(async () => {
+		if (!token) return;
+		setDoctorLoading(true);
+		setDoctorError("");
+		try {
+			const res = await axios.get("/patient/appointments/doctors");
+			setDoctorList(res?.data?.data || []);
+		} catch (e) {
+			setDoctorError(e.response?.data?.message || e.message || "Failed to load doctors");
+		} finally {
+			setDoctorLoading(false);
+		}
+	}, [token]);
+
+	const loadAppointments = useCallback(async () => {
+		if (!token) return;
+		setAppointmentsLoading(true);
+		setAppointmentsError("");
+		try {
+			const res = await axios.get("/patient/appointments");
+			setAppointments(res?.data?.data || []);
+		} catch (e) {
+			setAppointmentsError(e.response?.data?.message || e.message || "Failed to load appointments");
+		} finally {
+			setAppointmentsLoading(false);
+		}
+	}, [token]);
+
+	useEffect(() => {
+		loadDoctors();
+	}, [loadDoctors]);
+
+	useEffect(() => {
+		loadAppointments();
+	}, [loadAppointments]);
+
+	const handleCreateAppointment = async (e) => {
+		e.preventDefault();
+		setCreateError("");
+		setCreateSuccess("");
+		if (!appointmentForm.doctorId || !appointmentForm.appointmentAt || !appointmentForm.reason.trim()) {
+			setCreateError("All fields are required");
+			return;
+		}
+		const date = new Date(appointmentForm.appointmentAt);
+		if (Number.isNaN(date.getTime())) {
+			setCreateError("Choose a valid date and time");
+			return;
+		}
+		try {
+			setCreateLoading(true);
+			await axios.post("/patient/appointments", {
+				doctorId: appointmentForm.doctorId,
+				appointmentAt: date.toISOString(),
+				reason: appointmentForm.reason.trim(),
+			});
+			setCreateSuccess("Appointment created successfully");
+			setAppointmentForm({ doctorId: "", appointmentAt: "", reason: "" });
+			await loadAppointments();
+		} catch (e) {
+			setCreateError(e.response?.data?.message || e.message || "Failed to create appointment");
+		} finally {
+			setCreateLoading(false);
+		}
+	};
+
+	// Load surgeries for current patient
+	useEffect(() => {
+		let active = true;
+		const loadSurgeries = async () => {
+			if (!token) return;
+			setSurgeriesLoading(true);
+			setSurgeriesError("");
+			try {
+				const [upRes, compRes] = await Promise.all([
+					axios.get("/patient/surgeries"),
+					axios.get("/patient/surgeries/completed"),
+				]);
+				const up = upRes?.data?.data || [];
+				const comp = compRes?.data?.data || [];
+				if (active) {
+					setUpcomingSurgeries(up);
+					setCompletedSurgeries(comp);
+				}
+			} catch (e) {
+				if (active) setSurgeriesError(e.response?.data?.message || e.message || "Failed to load surgeries");
+			} finally {
+				if (active) setSurgeriesLoading(false);
+			}
+		};
+		loadSurgeries();
 		return () => {
 			active = false;
 		};
@@ -149,6 +261,205 @@ const PatientDashboard = () => {
 								<div className="mt-5 border-t border-slate-100 pt-5">
 									<Feedback patientId={user.id} />
 								</div>
+							)}
+						</div>
+					</div>
+				</div>
+
+				{/* Appointments card */}
+				<div className="mt-6">
+					<div className="bg-white rounded-2xl shadow border border-slate-100 p-6">
+						<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+							<div>
+								<h3 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
+									<FaCalendarPlus className="text-sky-600" />
+									Doctor Appointments
+								</h3>
+								<p className="text-sm text-slate-500">Schedule your next visit and review upcoming appointments.</p>
+							</div>
+						</div>
+						<div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+							<div>
+								<h4 className="text-base font-semibold text-slate-700">Book an appointment</h4>
+								<form className="mt-4 space-y-4" onSubmit={handleCreateAppointment}>
+									<div>
+										<label className="block text-sm font-medium text-slate-600">Select doctor</label>
+										<select
+											className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+											value={appointmentForm.doctorId}
+											onChange={(e) => setAppointmentForm((prev) => ({ ...prev, doctorId: e.target.value }))}
+											disabled={doctorLoading}
+										>
+											<option value="">Choose a doctor</option>
+											{doctorList.map((doc) => (
+												<option key={doc.id} value={doc.id}>
+													{doc.name} {doc.specialization ? `• ${doc.specialization}` : ""}
+												</option>
+											))}
+										</select>
+									</div>
+									<div>
+										<label className="block text-sm font-medium text-slate-600">Date &amp; time</label>
+										<input
+											type="datetime-local"
+											className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+											value={appointmentForm.appointmentAt}
+											onChange={(e) => setAppointmentForm((prev) => ({ ...prev, appointmentAt: e.target.value }))}
+											required
+										/>
+									</div>
+									<div>
+										<label className="block text-sm font-medium text-slate-600">Reason</label>
+										<textarea
+											className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+											rows={3}
+											value={appointmentForm.reason}
+											onChange={(e) => setAppointmentForm((prev) => ({ ...prev, reason: e.target.value }))}
+											required
+										/>
+									</div>
+									{doctorError && <p className="text-sm text-red-600">{doctorError}</p>}
+									{createError && <p className="text-sm text-red-600">{createError}</p>}
+									{createSuccess && <p className="text-sm text-emerald-600">{createSuccess}</p>}
+									<button
+										type="submit"
+										className="inline-flex items-center gap-2 bg-sky-600 text-white px-4 py-2.5 rounded-lg hover:bg-sky-700 transition disabled:opacity-60"
+										disabled={doctorLoading || createLoading}
+									>
+										{createLoading ? "Booking..." : "Book Appointment"}
+									</button>
+								</form>
+							</div>
+							<div>
+								<h4 className="text-base font-semibold text-slate-700">Upcoming appointments</h4>
+								<div className="mt-4 space-y-4">
+									{appointmentsLoading && <div className="text-sm text-slate-500">Loading appointments...</div>}
+									{appointmentsError && <div className="text-sm text-red-600">{appointmentsError}</div>}
+									{!appointmentsLoading && !appointmentsError && appointments.length === 0 && (
+										<div className="border border-dashed border-slate-200 rounded-xl p-4 text-sm text-slate-500">
+											No appointments scheduled yet.
+										</div>
+									)}
+									{appointments.map((appt) => (
+										<div key={appt.id} className="border border-slate-100 rounded-xl p-4">
+											<div className="text-sm text-slate-500">{new Date(appt.appointmentAt).toLocaleString()}</div>
+											<div className="mt-1 text-slate-800 font-semibold">{appt.doctorName || "Doctor"}</div>
+											{appt.doctorSpecialization && <div className="text-xs text-slate-500">{appt.doctorSpecialization}</div>}
+											<div className="mt-2 text-sm text-slate-600">Reason: {appt.reason}</div>
+											<div className="mt-2"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-700">{appt.status || "SCHEDULED"}</span></div>
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				{/* Surgeries card */}
+				<div className="mt-6">
+					<div className="bg-white rounded-2xl shadow border border-slate-100 p-6">
+						<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+							<div>
+								<h3 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
+									<FaProcedures className="text-sky-600" />
+									Surgery Schedule
+								</h3>
+								<p className="text-sm text-slate-500">Track your upcoming procedures and review completed surgeries.</p>
+							</div>
+							<div className="inline-flex rounded-full bg-slate-100 p-1">
+								<button
+									type="button"
+									className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition ${
+										activeSurgeryTab === "pending"
+											? "bg-white shadow text-sky-600"
+											: "text-slate-500 hover:text-slate-700"
+									}`}
+									onClick={() => setActiveSurgeryTab("pending")}
+								>
+									<FaClock /> Pending
+									<span className="ml-1 inline-flex items-center justify-center rounded-full bg-sky-100 text-sky-700 text-xs px-2 py-0.5">
+										{upcomingSurgeries.length}
+									</span>
+								</button>
+								<button
+									type="button"
+									className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition ${
+										activeSurgeryTab === "completed"
+											? "bg-white shadow text-emerald-600"
+											: "text-slate-500 hover:text-slate-700"
+									}`}
+									onClick={() => setActiveSurgeryTab("completed")}
+								>
+									<FaCheckCircle /> Completed
+									<span className="ml-1 inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5">
+										{completedSurgeries.length}
+									</span>
+								</button>
+							</div>
+						</div>
+						{surgeriesLoading && (
+							<div className="mt-4 text-sm text-slate-500 flex items-center gap-2">
+								<FaHospital className="text-slate-400" /> Loading surgeries...
+							</div>
+						)}
+						{surgeriesError && <div className="mt-4 text-sm text-red-600">{surgeriesError}</div>}
+						<div className="mt-6 space-y-4">
+							{(activeSurgeryTab === "pending" ? upcomingSurgeries : completedSurgeries).length === 0 && !surgeriesLoading ? (
+								<div className="border border-dashed border-slate-200 rounded-xl p-6 text-center text-sm text-slate-500">
+									{activeSurgeryTab === "pending" ? "No pending surgeries scheduled." : "No completed surgeries yet."}
+								</div>
+							) : (
+								(activeSurgeryTab === "pending" ? upcomingSurgeries : completedSurgeries).map((s) => (
+									<div
+										key={s.id}
+										className={`border border-slate-100 rounded-xl p-5 transition ${
+											activeSurgeryTab === "completed" ? "bg-emerald-50/60" : "hover:bg-slate-50"
+										}`}
+									>
+										<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+											<div>
+												<div className="text-slate-900 font-semibold text-base flex items-center gap-2">
+													{activeSurgeryTab === "completed" ? (
+														<FaCheckCircle className="text-emerald-500" />
+													) : (
+														<FaClock className="text-amber-500" />
+													)}
+													{s.condition}
+												</div>
+												<div className="text-sm text-slate-500 mt-0.5">{s.surgeryType}</div>
+											</div>
+											<div className="flex items-center gap-2">
+												<span className={`text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full ${
+													activeSurgeryTab === "completed"
+														? "bg-emerald-100 text-emerald-700"
+														: "bg-amber-100 text-amber-700"
+												}`}>{activeSurgeryTab === "completed" ? "Completed" : s.urgency}</span>
+											</div>
+										</div>
+										<div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600">
+											<div>
+												<span className="font-medium text-slate-700">Operating Room:</span> {s.operatingRoom}
+											</div>
+											<div>
+												<span className="font-medium text-slate-700">Scheduled:</span> {s.scheduledAt ? new Date(s.scheduledAt).toLocaleString() : "-"}
+											</div>
+											{activeSurgeryTab === "completed" && (
+												<div>
+													<span className="font-medium text-slate-700">Completed:</span> {s.completedAt ? new Date(s.completedAt).toLocaleString() : "-"}
+												</div>
+											)}
+											<div>
+												<span className="font-medium text-slate-700">Doctor:</span> {s.doctorName || "-"}
+												<div className="text-xs text-slate-500 break-all">{s.doctorEmail || "-"}</div>
+											</div>
+										</div>
+										{s.notes && (
+											<div className="mt-3 text-sm text-slate-600">
+												<span className="font-medium text-slate-700">Notes:</span> {s.notes}
+											</div>
+										)}
+									</div>
+								))
 							)}
 						</div>
 					</div>

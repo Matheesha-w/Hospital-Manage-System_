@@ -60,6 +60,7 @@ public class Surgery {
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime completedAt; // Set when status changes to COMPLETED
 }
 
 
