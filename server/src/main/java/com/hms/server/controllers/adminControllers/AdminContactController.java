@@ -18,12 +18,22 @@ public class AdminContactController {
 
     @GetMapping
     public ResponseEntity<ApiResponse> list() {
-        return ResponseEntity.ok(contactService.listMessages());
+        try {
+            return ResponseEntity.ok(contactService.listMessages());
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to retrieve contact messages"));
+        }
     }
 
     @PostMapping("/{id}/respond")
     public ResponseEntity<ApiResponse> respond(@PathVariable String id, @RequestBody ContactResponseRequest request) {
-        return ResponseEntity.ok(contactService.respond(id, request));
+        try {
+            return ResponseEntity.ok(contactService.respond(id, request));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to respond to contact message"));
+        }
     }
 }
 

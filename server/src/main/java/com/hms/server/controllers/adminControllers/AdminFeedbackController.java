@@ -18,16 +18,30 @@ public class AdminFeedbackController {
 
     @GetMapping("/pending")
     public ResponseEntity<List<FeedbackResponse>> getPendingFeedbacks() {
-        return ResponseEntity.ok(feedbackService.getAllFeedbacks(false));
+        try {
+            return ResponseEntity.ok(feedbackService.getAllFeedbacks(false));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/approved")
     public ResponseEntity<List<FeedbackResponse>> getApprovedFeedbacks() {
-        return ResponseEntity.ok(feedbackService.getAllFeedbacks(true));
+        try {
+            return ResponseEntity.ok(feedbackService.getAllFeedbacks(true));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PostMapping("/approve/{feedbackId}")
     public ResponseEntity<FeedbackResponse> approveFeedback(@PathVariable String feedbackId) {
-        return ResponseEntity.ok(feedbackService.approveFeedback(feedbackId));
+        try {
+            return ResponseEntity.ok(feedbackService.approveFeedback(feedbackId));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
