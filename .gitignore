@@ -1,0 +1,2 @@
+server\src\test\java\com\hms\server\controllers\doctorControllers\DoctorAppointmentControllerTest.java
+server/src/test/java/com/hms/server/controllers/doctorControllers/DoctorSurgeryControllerTest.java
