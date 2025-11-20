@@ -24,11 +24,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LabReportService {
 
+    // DIP: Depends on abstractions (repositories) instead of concrete persistence logic
     private final LabReportRepository labReportRepository;
     private final PatientRepository patientRepository;
 
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/server/uploads/lab-reports";
 
+    // SRP: Handles only summary-related business logic
     public ApiResponse getSummary() {
         long patientCount = patientRepository.countByIsActiveTrue();
         long pending = labReportRepository.findByStatus("PENDING").size();
@@ -40,6 +42,7 @@ public class LabReportService {
         }});
     }
 
+    // SRP: Handles lightweight patient list retrieval
     public ApiResponse listPatientsLite() {
         List<Patient> patients = patientRepository.findByIsActiveTrue();
         List<Map<String, String>> lite = patients.stream().map(p -> {
@@ -51,21 +54,25 @@ public class LabReportService {
         return new ApiResponse(true, "Patients fetched", lite);
     }
 
+    // SRP: Handles fetching all lab reports
     public ApiResponse listAll() {
         List<LabReport> reports = labReportRepository.findAll();
         return new ApiResponse(true, "Reports fetched", reports);
     }
 
+    // SRP: Handles filtering lab reports by status
     public ApiResponse listByStatus(String status) {
         List<LabReport> reports = labReportRepository.findByStatus(status);
         return new ApiResponse(true, "Reports fetched", reports);
     }
 
+    // SRP: Handles searching lab reports by patient name
     public ApiResponse search(String keyword) {
         List<LabReport> reportsByName = labReportRepository.findByPatientNameContainingIgnoreCase(keyword);
         return new ApiResponse(true, "Search results", reportsByName);
     }
 
+    // SRP: Fetches report by id
     public ApiResponse getById(String id) {
         Optional<LabReport> report = labReportRepository.findById(id);
         return report
@@ -73,6 +80,7 @@ public class LabReportService {
                 .orElseGet(() -> new ApiResponse(false, "Report not found"));
     }
 
+    // SRP & OCP: Updates status of a report; can handle new statuses without changing method
     public ApiResponse updateStatus(String id, String status) {
         Optional<LabReport> reportOpt = labReportRepository.findById(id);
         if (reportOpt.isEmpty()) return new ApiResponse(false, "Report not found");
@@ -83,6 +91,8 @@ public class LabReportService {
         return new ApiResponse(true, "Status updated", report);
     }
 
+    // SRP: Handles file upload and report creation logic
+    // OCP: Can extend to support new file types or storage locations without changing method signature
     public ApiResponse upload(String patientId,
                               String patientName,
                               String testName,
@@ -109,7 +119,7 @@ public class LabReportService {
                 report.setFileUrl("/api/lab/reports/files/" + safeFileName);
             }
 
-            report.prePersist();
+            report.prePersist(); // SRP: ensures entity consistency before saving
             LabReport saved = labReportRepository.save(report);
             return new ApiResponse(true, "Report uploaded", saved);
         } catch (IOException e) {
@@ -117,5 +127,3 @@ public class LabReportService {
         }
     }
 }
-
-

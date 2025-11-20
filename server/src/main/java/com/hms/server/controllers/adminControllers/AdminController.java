@@ -152,9 +152,11 @@ public class AdminController {
             } else {
                 return ResponseEntity.ok(new ApiResponse(false, "User not found"));
             }
+            // Returns user if found
         } catch (Exception ex) {
             log.error("Failed to retrieve user {}", userId, ex);
             return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to retrieve user"));
+            // Returns internal server error if any other exception occurs
         }
     }
 
@@ -176,6 +178,7 @@ public class AdminController {
         } catch (Exception ex) {
             log.error("Failed to activate user {}", userId, ex);
             return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to activate user"));
+            // Returns internal server error if any other exception occurs
         }
     }
 
@@ -197,6 +200,7 @@ public class AdminController {
         } catch (Exception ex) {
             log.error("Failed to deactivate user {}", userId, ex);
             return ResponseEntity.internalServerError().body(new ApiResponse(false, "Failed to deactivate user"));
+            // Returns internal server error if any other exception occurs
         }
     }
 }
